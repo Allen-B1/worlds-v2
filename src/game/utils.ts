@@ -79,3 +79,16 @@ export function objectID(object: any) : string {
 
     return object.__uniqueID;
 }
+
+import * as store from 'svelte/store';
+export function storageStore<T>(key: string, defaultValue: T): store.Writable<T> {
+    if (typeof localStorage == "undefined") {
+        return store.writable<T>(defaultValue);
+    }
+    let s = store.writable<T>(localStorage.get(key) || defaultValue);
+
+    s.subscribe(function(value) {
+        localStorage.set(key, value);
+    })
+    return s;
+}

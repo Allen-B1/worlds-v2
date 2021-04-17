@@ -28,7 +28,7 @@ import { onMount } from "svelte";
 export let gameID: string;
 export let game: Game;
 
-let id: string = (store.get(session) as any).id;
+let id: string = localStorage.getItem("sid");
 let selectedTile: number = -1;
 
 async function update() {

@@ -28,7 +28,7 @@ app.post("/api/room/:room/join", function(req, res) {
             room = new Room(2);
         } else if (req.params.room == "ffa") {
             room = new Room(8);
-        } else if (req.params.room = "0") {
+        } else if (req.params.room == "0") {
             room = new Room(1);  
         } else {
             room = new Room();

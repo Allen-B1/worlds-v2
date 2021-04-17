@@ -30,8 +30,9 @@ export class Layout {
             layout.swamps.add(randomPool.splice(Math.floor(Math.random() * randomPool.length), 1)[0]);
         }
         layout.cities = new Map<number, number>();
-        layout.cities.set(randomPool.splice(Math.floor(Math.random() * randomPool.length), 1)[0], 30);
-        layout.cities.set(randomPool.splice(Math.floor(Math.random() * randomPool.length), 1)[0], 30);
+        for (let i = 0; i < 3; i++) {
+            layout.cities.set(randomPool.splice(Math.floor(Math.random() * randomPool.length), 1)[0], 30);
+        }
 
         layout.spawns = new Map();
         while (layout.spawns.size < players) {
@@ -99,7 +100,7 @@ export class Game {
     }
 
     nextTurn() : void {
-        console.log("--- " + this.turn + " " + utils.objectID(this));
+//        console.log("--- " + this.turn + " " + utils.objectID(this));
         this.turn += 1;
         if (this.turn % 4 == 0) {
             for (let swamp of this.swamps) {

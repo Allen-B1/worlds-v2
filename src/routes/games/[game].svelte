@@ -77,12 +77,18 @@ onMount(async () => {
         let newTile = selectedTile;
         if (ev.code == "KeyA") {
             newTile -= 1;
+            if (newTile % game.width == game.width - 1) {
+                newTile += game.width;
+            }
         } else if (ev.code == "KeyW") {
             newTile -= game.width;
         } else if (ev.code == "KeyS") {
             newTile += game.width;
         } else if (ev.code == "KeyD") {
             newTile += 1;
+            if (newTile % game.width == 0) {
+                newTile -= game.width;
+            }
         }
         if (selectedTile != newTile && game.tiles.get(newTile).terrain != -2) {
             utils.xhr("POST", "/api/game/" + gameID + "/move?id=" + id + "&from=" + selectedTile + "&to=" + newTile);
@@ -95,16 +101,15 @@ onMount(async () => {
 <style>
     main { 
         margin-top: 128px;
+        margin-bottom: 128px;
         display: flex;
         flex-direction: row;
         justify-content: center;
         align-items: flex-start;
     }
-    #map {
-        position: relative;
-        background: #fff;
-        margin-right: 16px; }
 
+    .map { margin-right: 16px;}
+    
     #turn {
         padding: 16px;
         background: #fff;
@@ -112,60 +117,6 @@ onMount(async () => {
         margin-bottom: 16px;
     }
 
-    .tile {
-        color: #fff;
-        text-align: center; line-height: 24px;
-        position: absolute;
-        width: 24px; height: 24px; }
-    .tile.selected {
-        outline: 2px solid #aaa; }
-    .terrain--1.city {
-        background: #777; }
-    .swamp {
-        background: #aaa; 
-    }
-    :not(.swamp).controller::after {
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 8px;
-        height: 8px;
-        border-radius: 0 0 0 8px;
-        background: rgba(0,0,0,0.3);
-        content: " "; }
-    .swamp::after {
-        position: absolute;
-        top: 4px;
-        left: 4px;
-        width: 16px;
-        height: 12px;
-        border: 3px solid rgba(0,0,0,0.3);
-        content: " ";
-        border-left: 0;
-        border-right: 0; }
-    .swamp::before {
-        position: absolute;
-        top: 11px; left: 6px;
-        width: 12px; height: 3px;
-        background: rgba(0,0,0,0.3);
-        content: " "; }
-    .terrain--2 {
-        background: hsl(200, 50%, 15%); }
-    .terrain--1:not(.city) { color: #111; }
-    .terrain-0 {
-        background: hsl(100, 50%, 50%); }
-    .terrain-1 {
-        background: hsl(320, 50%, 50%); }
-    .terrain-2 {
-        background: hsl(30, 50%, 50%); }
-    .terrain-3 {
-        background: hsl(200, 50%, 50%); }
-    .terrain-4 {
-        background: hsl(0, 50%, 50%); }
-    .terrain-5 {
-        background: hsl(270, 50%, 50%); }
-    .terrain-6 {
-        background: hsl(60, 50%, 50%); }
     #players {
         padding: 16px 24px;
         padding-bottom: 8px;
@@ -194,7 +145,7 @@ onMount(async () => {
     </style>
 
 <main>
-    <div id="map" style="width:{game.width*24}px;height:{game.height*24}px">
+    <div class="map" style="width:{game.width*24}px;height:{game.height*24}px">
         {#each Array(game.width * game.height) as _, idx}
             <div class="tile terrain-{game.tiles.get(idx).terrain}" id="tile-{idx}" style="left:{24*(idx % game.width)}px;top:{24*Math.floor(idx / game.width)}px" class:swamp={game.swamps.has(idx)} class:city={game.cities.has(idx)} class:controller={game.controllers.has(idx)} on:click={() => selectedTile = idx} class:selected={selectedTile == idx}>
                 {game.tiles.get(idx).army != 0 ? game.tiles.get(idx).army : ""}

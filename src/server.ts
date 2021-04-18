@@ -87,6 +87,25 @@ app.post("/api/room/:room/settings_layout", function (req, res) {
     res.json(changed);
 });
 
+app.post("/api/room/:room/settings_map", function (req, res) {
+    let room = rooms.get(req.params.room);
+    if (room == null) {
+        res.sendStatus(404);
+        return;
+    }
+
+    let id = String(req.query.id);
+    if (!room.isHost(id)) {
+        res.sendStatus(403);
+        return;
+    }
+
+    room.settings_map = String(req.query.map);
+
+    res.json(true);
+});
+
+
 app.get("/api/room/:room", function (req, res) {
     let room = rooms.get(req.params.room);
     if (room == null) {
@@ -183,17 +202,19 @@ app.post("/api/game/:game/surrender", function (req, res) {
 setInterval(function() {
     for (let [id, room] of rooms.entries()) {
         if (room.shouldStart && !room2game.has(id)) {
-            let [game, mapping] = room.toGame();
-            let gameID = utils.objectID(game);
+            (async function() {
+                let [game, mapping] = await room.toGame();
+                let gameID = utils.objectID(game);
 
-            games.set(gameID, game);
-            gamekeys.set(gameID, mapping);
-            room2game.set(id, gameID);
+                games.set(gameID, game);
+                gamekeys.set(gameID, mapping);
+                room2game.set(id, gameID);
 
-            setTimeout(function() {
-                rooms.delete(id);
-                room2game.delete(id);
-            }, 5000);
+                setTimeout(function() {
+                    rooms.delete(id);
+                    room2game.delete(id);
+                }, 5000);
+            })();
         }
     }
     for (let game of games.values()) {

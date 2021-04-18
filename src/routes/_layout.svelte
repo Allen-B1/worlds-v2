@@ -55,11 +55,64 @@
 			padding: 8px 24px;
 			min-width: 72px; 
 			font-size: 16px; }
-		.card {        background: #fff;
-        box-shadow: 2px 2px 0 #aaa; }
+		.map {
+			position: relative;
+			background: #fff; }
+		.tile {
+			color: #fff;
+			text-align: center; line-height: 24px;
+			position: absolute;
+			width: 24px; height: 24px; }
+		.tile.selected {
+			outline: 2px solid #aaa; }
+		.terrain--1.city {
+			background: #777; }
+		.swamp {
+			background: #aaa; 
+		}
+		:not(.swamp).controller::after {
+			position: absolute;
+			top: 0;
+			right: 0;
+			width: 8px;
+			height: 8px;
+			border-radius: 0 0 0 8px;
+			background: rgba(0,0,0,0.3);
+			content: " "; }
+		.swamp::after {
+			position: absolute;
+			top: 4px;
+			left: 4px;
+			width: 16px;
+			height: 12px;
+			border: 3px solid rgba(0,0,0,0.3);
+			content: " ";
+			border-left: 0;
+			border-right: 0; }
+		.swamp::before {
+			position: absolute;
+			top: 11px; left: 6px;
+			width: 12px; height: 3px;
+			background: rgba(0,0,0,0.3);
+			content: " "; }
+		.terrain--2 {
+			background: hsl(200, 50%, 15%); }
+		.terrain--1:not(.city) { color: #111; }
+		.terrain-0 {
+			background: hsl(100, 50%, 50%); }
+		.terrain-1 {
+			background: hsl(320, 50%, 50%); }
+		.terrain-2 {
+			background: hsl(30, 50%, 50%); }
+		.terrain-3 {
+			background: hsl(200, 50%, 50%); }
+		.terrain-4 {
+			background: hsl(0, 50%, 50%); }
+		.terrain-5 {
+			background: hsl(270, 50%, 50%); }
+		.terrain-6 {
+			background: hsl(60, 50%, 50%); }
 	</style>
 </svelte:head>
 
-<main>
-	<slot></slot>
-</main>
+<slot></slot>

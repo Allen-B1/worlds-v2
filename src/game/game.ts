@@ -53,6 +53,26 @@ export class Layout {
         
         return layout;
     }
+
+    toJSON = utils.toJSON
+
+    static fromJSON(obj: any) : Layout {
+        let layout = new Layout();
+        layout.width = obj.width;
+        layout.height = obj.height;
+        layout.swamps = new Set(obj.swamps || []);
+        layout.cities = new Map(Object.keys(obj.cities || {}).map(key => [Number(key), Number(obj.cities[key])]));
+        layout.tiles = new Map(Object.keys(obj.tiles || {}).map(key => [Number(key), obj.tiles[key]]));
+        layout.spawns = new Map(Object.keys(obj.spawns).map(key => [Number(key), String(obj.spawns[key])]));
+
+        if (obj.mountains instanceof Array) {
+            for (let mountain of obj.mountains) {
+                layout.tiles.set(mountain, {army:0, terrain:-2});
+            }
+        }
+
+        return layout;
+    }
 }
 
 export class Game {

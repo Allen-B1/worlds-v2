@@ -19,6 +19,8 @@ export function objectFrom<K, V>(entries: Iterable<[K, V]>) : Object<K, V> {
 }
 
 export function toJSON<T>(this: T, force?: boolean) : object {
+    if (this == null) return null;
+
     if (this instanceof Set) {
         return Array.from(this) as object;
     }

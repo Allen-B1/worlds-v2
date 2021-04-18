@@ -1,5 +1,6 @@
 import { Layout, Game, LayoutSettings } from "./game"
 import * as utils from "./utils"
+import fetch from "node-fetch";
 
 export class Room {
     players: Map<string, string>
@@ -8,6 +9,7 @@ export class Room {
     host: string
 
     settings_layout: LayoutSettings
+    settings_map: string
 
     constructor(maxPlayers: number = Infinity) {
         this.players = new Map();
@@ -20,6 +22,7 @@ export class Room {
             size: 20
         };
         this.host = "";
+        this.settings_map = "";
     }
 
     isHost(id: string) : boolean {
@@ -68,14 +71,26 @@ export class Room {
         return this.force.size >= this.maxForce || this.players.size >= this.maxPlayers;
     }
 
-    toGame() : [Game, utils.Object<string, number>] {
+    async toGame() : Promise<[Game, utils.Object<string, number>]> {
         let playersList: string[] = [];
         let assoc: utils.Object<string, number> = {};
         for (let [k, v] of this.players) {
             playersList.push(v);
             assoc[k] = playersList.length - 1;
         }
-        return [Game.new(playersList, Layout.randomized(this.players.size, this.settings_layout)), assoc];
+
+        let layout: Layout;
+        if (this.settings_map) {
+            try {
+                layout = Layout.fromJSON(await (await fetch(this.settings_map)).json());
+            } catch(err) {
+                layout = Layout.randomized(this.players.size, this.settings_layout);
+            }
+        } else {
+            layout = Layout.randomized(this.players.size, this.settings_layout);
+        }
+
+        return [Game.new(playersList, layout), assoc];
     }
 
     toJSON() {
@@ -112,6 +127,7 @@ export class Room {
 
         room.maxPlayers = obj.maxPlayers
         room.settings_layout = obj.settings_layout;
+        room.settings_map = obj.settings_map;
         room.host = obj.host.toString();
 
         return room;

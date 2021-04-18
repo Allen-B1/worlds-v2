@@ -86,6 +86,10 @@
         utils.xhr("POST", "/api/room/" + roomID + "/settings_layout?id=" + id + "&" + name + "=" + value);
     }
 
+    function settings_map(url: string) {
+        utils.xhr("POST", "/api/room/" + roomID + "/settings_map?id=" + id + "&map=" + url);
+    }
+
 </script>
 
 <style>
@@ -117,7 +121,7 @@
     #settings {
         padding: 16px 32px;
         padding-bottom: 12px;
-        width: 192px;
+        width: 200px;
         background: #fff; }
     .setting {
         display: flex;
@@ -125,7 +129,9 @@
         margin-bottom: 4px; }
     .setting span { flex-grow: 1; }
     .setting input {
-        width: 64px; }
+        width: 64px;
+        margin-left: 8px; }
+    .setting .map { flex-grow: 1; }
 
     h5 { text-align: center; }
     #buttons { text-align: center; margin-top: 8px; }
@@ -150,6 +156,13 @@
     </div>
     <div id="settings">
         <h5>Settings</h5>
+        {#if isHost || room.settings_map != ""} 
+        <div class="setting">
+            {#if room.settings_map}
+                <a target="_blank" href={"/maps?map=" + encodeURIComponent(room.settings_map)}>Map</a>{:else}Map{/if}:
+            <input type="url" disabled={!isHost} class="map textfield" value={room.settings_map} on:input={function() { settings_map(this.value); }}></div>
+        {/if}
+        {#if room.settings_map == ""}
         <div class="setting"><span>Mountain Density: </span><input type="number" min="0" max="1" step="0.01" class="textfield" disabled={!isHost}
             value={room.settings_layout.mountain_density}
             on:input={function() { settings_layout("mountain_density", this.value); }}></div>
@@ -159,9 +172,10 @@
         <div class="setting"><span>City Count: </span><input type="number" min="0" class="textfield" disabled={!isHost}
             value={room.settings_layout.city_count}
             on:input={function() { settings_layout("city_count", this.value); }}></div>
-        <div class="setting"><span>Map Size: </span><input type="number" min="10" max="35" class="textfield" disabled={!isHost} 
+        <div class="setting"><span>Map Size: </span><input type="number" min="7" max="40" class="textfield" disabled={!isHost} 
             value={room.settings_layout.size}
             on:input={function() { settings_layout("size", this.value); }}></div>
+        {/if}
     </div>
 </div>
 {/if}

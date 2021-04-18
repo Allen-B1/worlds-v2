@@ -96,6 +96,10 @@ export class Game {
         this.turn = 0;
     }
 
+    get ended() : boolean {
+        return this.controllers.size <= 1 && this.controllers.size < this.players.length;
+    }
+
     static new(players: string[], layout: Layout) {
         let game = new Game();
         game.width = layout.width;
@@ -142,7 +146,6 @@ export class Game {
                     this.tiles.set(swamp, tile);
                 } else {
                     this.deleteTile(swamp);
-                    this.controllers.delete(swamp);
                 }
             }
         }
@@ -225,10 +228,11 @@ export class Game {
                     this.controllers.delete(to);
                     for (let [tile, data] of this.tiles) {
                         if (data.terrain == toTile.terrain) {
-                            data.terrain = toTile.terrain;
+                            data.terrain = fromTile.terrain;
                         }
                     }
                 }
+
                 if (this.controllers.has(from)) {
                     this.controllers.delete(from);
                     this.controllers.add(to);
@@ -241,7 +245,7 @@ export class Game {
                     this.controllers.delete(from);
                     for (let [tile, data] of this.tiles) {
                         if (data.terrain == fromTile.terrain) {
-                            data.terrain = fromTile.terrain;
+                            data.terrain = toTile.terrain;
                         }
                     }
                 }
@@ -260,6 +264,16 @@ export class Game {
 
     private deleteTile(tile: number) {
         this.tiles.delete(tile);
+        let tileData = this.tiles.get(tile);
+
+        if (this.controllers.has(tile) && tileData.terrain >= 0) {
+            for (let [tile, data] of this.tiles) {
+                if (data.terrain == tileData.terrain) {
+                    this.tiles.delete(tile);
+                }
+            }
+        }
+
         this.controllers.delete(tile);
     }
 

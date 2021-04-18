@@ -17,8 +17,10 @@
 </script>
 
 <script lang="ts">
+import Dialog from '../../components/Dialog.svelte';
+
 import * as store from "svelte/store";
-import {stores} from "@sapper/app";
+import {stores, goto} from "@sapper/app";
 let {session, preloading:preloadStore} = stores();
 
 import * as utils from "../../game/utils";
@@ -31,9 +33,21 @@ export let game: Game;
 let selectedTile: number = -1;
 let id: string;
 
+let showGameEndedDialog = false;
+
+let wasGameEnded = false;
 async function update() {
     let gameJSON = JSON.parse(await utils.xhr("GET", "/api/game/" + gameID));
     game = Game.fromJSON(gameJSON);
+
+    if (game.ended && !wasGameEnded) {
+        wasGameEnded = true;
+        showGameEndedDialog = true;
+    }
+}
+
+function playAgain() {
+    goto("/rooms/" + sessionStorage.getItem("room"));
 }
 
 let alive: Set<number> = new Set();
@@ -49,7 +63,7 @@ $: {
 }
 
 onMount(async () => {
-    id = localStorage.getItem("sid");
+    id = sessionStorage.getItem("sid");
 
     let interval = setInterval(update, 150);
     preloadStore.subscribe((value) => {
@@ -96,6 +110,13 @@ onMount(async () => {
         }
     });
 });
+
+function displayNumber(num: number) : string {
+    if (num >= 1000) {
+        return (num / 1000).toFixed(1) + "K";
+    }
+    return String(num);
+}
 </script>
 
 <style>
@@ -148,7 +169,7 @@ onMount(async () => {
     <div class="map" style="width:{game.width*24}px;height:{game.height*24}px">
         {#each Array(game.width * game.height) as _, idx}
             <div class="tile terrain-{game.tiles.get(idx).terrain}" id="tile-{idx}" style="left:{24*(idx % game.width)}px;top:{24*Math.floor(idx / game.width)}px" class:swamp={game.swamps.has(idx)} class:city={game.cities.has(idx)} class:controller={game.controllers.has(idx)} on:click={() => selectedTile = idx} class:selected={selectedTile == idx}>
-                {game.tiles.get(idx).army != 0 ? game.tiles.get(idx).army : ""}
+                {game.tiles.get(idx).army != 0 ? displayNumber(game.tiles.get(idx).army) : ""}
             </div>
         {/each}
     </div>
@@ -167,3 +188,11 @@ onMount(async () => {
         </div>
     </div>
 </main>
+
+<Dialog show={showGameEndedDialog} height={64} width={256}>
+    <span slot="title">Game Ended</span>
+    <span slot="buttons">
+        <button on:click={() => showGameEndedDialog = false}>Spectate</button>
+        <button on:click={playAgain}>Play Again</button>
+    </span>
+</Dialog>

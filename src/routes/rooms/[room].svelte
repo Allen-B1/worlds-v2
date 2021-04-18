@@ -67,7 +67,8 @@
         try {
             let roomJSON = JSON.parse(await utils.xhr("GET", "/api/room/" + roomID));
             if (roomJSON.game) {
-                localStorage.setItem("sid", id);
+                sessionStorage.setItem("room", roomID);
+                sessionStorage.setItem("sid", id);
                 goto("/games/" + roomJSON.game);
             }
             room = Room.fromJSON(roomJSON);

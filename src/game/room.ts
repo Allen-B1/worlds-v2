@@ -1,15 +1,29 @@
-import { Layout, Game } from "./game"
+import { Layout, Game, LayoutSettings } from "./game"
 import * as utils from "./utils"
 
 export class Room {
     players: Map<string, string>
     force: Set<string>
     maxPlayers: number
+    host: string
+
+    settings_layout: LayoutSettings
 
     constructor(maxPlayers: number = Infinity) {
         this.players = new Map();
         this.force = new Set();
         this.maxPlayers = maxPlayers;
+        this.settings_layout = {
+            mountain_density: 0.25,
+            swamp_density: 0.1,
+            city_count: 5,
+            size: 20
+        };
+        this.host = "";
+    }
+
+    isHost(id: string) : boolean {
+        return id == this.host;
     }
 
     join(name: string) : string {
@@ -19,6 +33,10 @@ export class Room {
 
         let id = Math.random().toString(36).slice(2);
         this.players.set(id, name);
+
+        if (this.host == "") {
+            this.host = id;
+        }
 
         return id;
     }
@@ -39,6 +57,10 @@ export class Room {
         let ret = this.players.has(player);
         this.players.delete(player);
         this.force.delete(player);
+
+        if (this.host == player) {
+            this.host = this.players.keys().next().value || "";
+        }
         return ret;
     }
 
@@ -53,7 +75,7 @@ export class Room {
             playersList.push(v);
             assoc[k] = playersList.length - 1;
         }
-        return [Game.new(playersList, Layout.randomized(15, this.players.size)), assoc];
+        return [Game.new(playersList, Layout.randomized(this.players.size, this.settings_layout)), assoc];
     }
 
     toJSON() {
@@ -64,12 +86,18 @@ export class Room {
 
         let players = [], force = [];
         for (let id of idxToId) {
-            players.push(this.players.get(id));
-            force.push(this.force.has(id));
+            if (this.host != id) {
+                players.push(this.players.get(id));
+                force.push(this.force.has(id));    
+            } else {
+                players.unshift(this.players.get(id));
+                force.unshift(this.force.has(id)); 
+            }
         }
 
         obj.players = players;
         obj.force = force;
+        obj.host = 0;
         return obj;
     }
 
@@ -83,6 +111,8 @@ export class Room {
         }
 
         room.maxPlayers = obj.maxPlayers
+        room.settings_layout = obj.settings_layout;
+        room.host = obj.host.toString();
 
         return room;
     }

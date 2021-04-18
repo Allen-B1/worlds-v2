@@ -19,7 +19,7 @@
 <main>
 	<h1>squares</h1>
 
-	<div><input type="text" value={typeof localStorage != "undefined" ? localStorage.getItem("name") : ""} class="textfield" placeholder="hello" on:input={function() {localStorage.setItem("name", this.value)}}></div>
+	<div><input type="text" value={typeof localStorage != "undefined" ? localStorage.getItem("name") : ""} class="textfield" placeholder="anonymous" on:input={function() {localStorage.setItem("name", this.value)}}></div>
 	<div id="buttons">
 		<a class="button" href="/rooms/ffa">FFA</a>
 		<a class="button" href="/rooms/1v1">1v1</a>

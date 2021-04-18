@@ -4,7 +4,7 @@ import * as sapper from '@sapper/server';
 
 import * as utils from './game/utils';
 import {Room} from './game/room';
-import {Game,Layout} from './game/game';
+import {Game,Layout, LayoutSettings} from './game/game';
 
 // shut the freaking typechecker up
 void(utils);
@@ -63,6 +63,30 @@ app.post("/api/room/:room/force", function (req, res) {
     res.json(room.force.has(id));
 });
 
+app.post("/api/room/:room/settings_layout", function (req, res) {
+    let room = rooms.get(req.params.room);
+    if (room == null) {
+        res.sendStatus(404);
+        return;
+    }
+
+    let id = String(req.query.id);
+    if (!room.isHost(id)) {
+        res.sendStatus(403);
+        return;
+    }
+
+    let changed = false;
+    for (let setting of Object.keys(room.settings_layout)) {
+        if (setting in req.query) {
+            room.settings_layout[setting] = Number(req.query[setting]) || 0;
+            changed = true;
+        }
+    }
+
+    res.json(changed);
+});
+
 app.get("/api/room/:room", function (req, res) {
     let room = rooms.get(req.params.room);
     if (room == null) {
@@ -76,6 +100,16 @@ app.get("/api/room/:room", function (req, res) {
     }
 
     res.json(obj);
+});
+
+app.get("/api/room/:room/is_host", function (req, res) {
+    let room = rooms.get(req.params.room);
+    if (room == null) {
+        res.sendStatus(404);
+        return;
+    }
+
+    res.json(room.isHost(String(req.query.id)));
 });
 
 app.get("/api/game/:game", function (req, res) {
@@ -106,6 +140,25 @@ app.post("/api/game/:game/move", function (req, res) {
     let to = (req.query.to as any) | 0;
 
     res.json(game.move(playerIndex, from, to));
+});
+
+app.post("/api/game/:game/split", function (req, res) {
+    let game = games.get(req.params.game);
+    if (game == null) {
+        res.sendStatus(404);
+        return;
+    }
+
+    let key = req.query.id.toString();
+    let playerIndex = gamekeys.get(req.params.game)[key];
+    if (typeof playerIndex !== "number") {
+        res.sendStatus(403);
+        return;
+    }
+
+    let tile = (req.query.tile as any) | 0;
+
+    res.json(game.split(playerIndex, tile));
 });
 
 setInterval(function() {

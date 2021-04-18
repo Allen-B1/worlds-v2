@@ -28,8 +28,14 @@
     export let room: Room;
     let id: string;
 
+    function randomName() {
+        let words = "Aardvark, Alligator, Alpaca, Anaconda, Ant, Antelope, Ape, Aphid, Armadillo, Asp, Ass, Baboon, Badger, Bald Eagle, Barracuda, Bass, Basset Hound, Bat, Bear, Beaver, Bedbug, Bee, Beetle, Bird, Bison, Black panther, Black Widow Spider, Blue Jay, Blue Whale, Bobcat, Buffalo, Butterfly, Buzzard, Camel, Caribou, Carp, Cat, Caterpillar, Catfish, Cheetah, Chicken, Chimpanzee, Chipmunk, Cobra, Cod, Condor, Cougar, Cow, Coyote, Crab, Crane, Cricket, Crocodile, Crow, Cuckoo, Deer, Dinosaur, Dog, Dolphin, Donkey, Dove, Dragonfly, Duck, Eagle, Eel, Elephant, Emu, Falcon, Ferret, Finch, Fish, Flamingo, Flea, Fly, Fox, Frog, Goat, Goose, Gopher, Gorilla, Grasshopper, Hamster, Hare, Hawk, Hippopotamus, Horse, Hummingbird, Humpback Whale, Husky, Iguana, Impala, Kangaroo, Ladybug, Leopard, Lion, Lizard, Llama, Lobster, Mongoose, Monitor lizard, Monkey, Moose, Mosquito, Moth, Mountain goat, Mouse, Mule, Octopus, Orca, Ostrich, Otter, Owl, Ox, Oyster, Panda, Parrot, Peacock, Pelican, Penguin, Perch, Pheasant, Pig, Pigeon, Polar bear, Porcupine, Quail, Rabbit, Raccoon, Rat, Rattlesnake, Raven, Rooster, Sea lion, Sheep, Shrew, Skunk, Snail, Snake, Spider, Tiger, Walrus, Whale, Wolf, Zebra".split(", ");
+        return "anonymous " + words[Math.floor(Math.random() * words.length)].toLowerCase();
+    }
+
     onMount(async () => {
-        id = JSON.parse(await utils.xhr("POST", "/api/room/" + roomID + "/join?name=" + localStorage.getItem("name")));
+        let name = localStorage.getItem("name") || randomName();
+        id = JSON.parse(await utils.xhr("POST", "/api/room/" + roomID + "/join?name=" + name));
 
         let interval = setInterval(update, 1000);
 
@@ -46,7 +52,16 @@
     });
 
     let isCustom: boolean;
-    $: isCustom = !(roomID == "ffa" || roomID == "1v1");
+    $: isCustom = !(roomID == "ffa" || roomID == "1v1" || roomID == "0");
+
+    let isHost: boolean = false;
+    $: {
+        room;
+        if (typeof window != "undefined")
+            (async function() {
+                isHost = JSON.parse(await utils.xhr("GET", "/api/room/" + roomID + "/is_host?id=" + id));
+            })();
+    }
 
     async function update() {
         try {
@@ -66,6 +81,11 @@
             update();
         }
     }
+
+    function settings_layout(name: string, value: any) {
+        utils.xhr("POST", "/api/room/" + roomID + "/settings_layout?id=" + id + "&" + name + "=" + value);
+    }
+
 </script>
 
 <style>
@@ -82,12 +102,33 @@
         width: 256px;
         padding: 16px;
         text-align: center;
-        margin: 16px auto;
         background: #fff;
+        margin-right: 16px;
     }
 
-    #buttons { text-align: center; margin-top: 8px; }
+    #game-info {
+        display: flex; flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+        margin-top: 16px;
+        margin-bottom: 16px;
+    }
 
+    #settings {
+        padding: 16px 32px;
+        padding-bottom: 12px;
+        width: 192px;
+        background: #fff; }
+    .setting {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px; }
+    .setting span { flex-grow: 1; }
+    .setting input {
+        width: 64px; }
+
+    h5 { text-align: center; }
+    #buttons { text-align: center; margin-top: 8px; }
     #force.inactive { background: #ccc; }
 </style>
 
@@ -98,17 +139,34 @@
 <div id="player-count" style="margin-bottom:16px"><span>{room ? room.players.size : 0}</span> of <span>{room ? (room.maxPlayers || "inf") : 0}</span></div>
 
 {#if isCustom &&  room != null}
-<div id="players">
-    <h5>Players</h5>
-    {#each Array.from(room.players.keys()) as playerID}
-    <div class="player">
-        {room.players.get(playerID)}
+<div id="game-info">
+    <div id="players">
+        <h5>Players</h5>
+        {#each Array.from(room.players.keys()) as playerID}
+        <div class="player">
+            {room.players.get(playerID)}
+        </div>
+        {/each}
     </div>
-    {/each}
+    <div id="settings">
+        <h5>Settings</h5>
+        <div class="setting"><span>Mountain Density: </span><input type="number" min="0" max="1" step="0.01" class="textfield" disabled={!isHost}
+            value={room.settings_layout.mountain_density}
+            on:input={function() { settings_layout("mountain_density", this.value); }}></div>
+        <div class="setting"><span>Swamp Density: </span><input type="number" min="0" max="1" step="0.01" class="textfield" disabled={!isHost}
+            value={room.settings_layout.swamp_density}
+            on:input={function() { settings_layout("swamp_density", this.value); }}></div>
+        <div class="setting"><span>City Count: </span><input type="number" min="0" class="textfield" disabled={!isHost}
+            value={room.settings_layout.city_count}
+            on:input={function() { settings_layout("city_count", this.value); }}></div>
+        <div class="setting"><span>Map Size: </span><input type="number" min="10" max="35" class="textfield" disabled={!isHost} 
+            value={room.settings_layout.size}
+            on:input={function() { settings_layout("size", this.value); }}></div>
+    </div>
 </div>
 {/if}
 
-{#if room && room.players.size > 1}
+{#if room && (room.players.size > 1 || isCustom)}
 <div style="text-align:center">
     <button id="force" class="big {!force?"inactive":""}" on:click={() => force = !force}>Force {room.force.size} / {room.maxForce}</button>
 </div>

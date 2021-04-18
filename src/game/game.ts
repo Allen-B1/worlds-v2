@@ -7,6 +7,13 @@ export interface Tile {
 
 type Spawn = string
 
+export interface LayoutSettings {
+    swamp_density: number
+    city_count: number
+    mountain_density: number 
+    size: number
+}
+
 export class Layout {
     width: number
     height: number
@@ -18,20 +25,20 @@ export class Layout {
 
     constructor() {}
 
-    static randomized(size: number, players: number) : Layout {
+    static randomized(players: number, settings: LayoutSettings) : Layout {
         let layout = new Layout();
-        layout.width = layout.height = size;
+        layout.width = layout.height = settings.size;
 
 
-        let randomPool = Array(size*size).fill(0).map((_, i) => i);
+        let randomPool = Array(settings.size*settings.size).fill(0).map((_, i) => i);
 
         layout.swamps = new Set();
-        for (let i = 0; i < size * size * 0.1; i++) {
+        for (let i = 0; i < settings.size * settings.size * settings.swamp_density; i++) {
             layout.swamps.add(randomPool.splice(Math.floor(Math.random() * randomPool.length), 1)[0]);
         }
         layout.cities = new Map<number, number>();
-        for (let i = 0; i < 3; i++) {
-            layout.cities.set(randomPool.splice(Math.floor(Math.random() * randomPool.length), 1)[0], 30);
+        for (let i = 0; i < settings.city_count; i++) {
+            layout.cities.set(randomPool.splice(Math.floor(Math.random() * randomPool.length), 1)[0], 25 + Math.floor(Math.random() * 10));
         }
 
         layout.spawns = new Map();
@@ -40,7 +47,7 @@ export class Layout {
         }
 
         layout.tiles = new Map();
-        for (let i = 0; i < size * size * 0.25; i++) {
+        for (let i = 0; i < settings.size * settings.size * settings.mountain_density; i++) {
             layout.tiles.set(randomPool.splice(Math.floor(Math.random() * randomPool.length), 1)[0], {terrain:-2,army:0});
         }
         
@@ -102,17 +109,24 @@ export class Game {
     nextTurn() : void {
 //        console.log("--- " + this.turn + " " + utils.objectID(this));
         this.turn += 1;
-        if (this.turn % 4 == 0) {
+        if (this.turn % 40 == 0) {
+            for (let controller of this.controllers) {
+                this.tiles.get(controller).army += 1;
+            }
+        }
+        if (this.turn % 2 == 0) {
             for (let swamp of this.swamps) {
                 let tile = this.tiles.get(swamp);
-                if (tile.terrain >= 0 && tile.army > 0) {
+                if (tile.terrain >= 0 && tile.army > 1) {
                     tile.army -= 1;
                     this.tiles.set(swamp, tile);
                 } else {
                     this.deleteTile(swamp);
+                    this.controllers.delete(swamp);
                 }
             }
-
+        }
+        if (this.turn % 4 == 0) {
             for (let [city, maxArmy] of this.cities.entries()) {
                 let tile = this.tiles.get(city);
                 if (tile.terrain == -1) {
@@ -140,7 +154,28 @@ export class Game {
         return true;
     }
 
-    // TODO
+    split(playerIndex: number, tile: number) : number {
+        let fromTile = this.tiles.get(tile);
+        if (fromTile.terrain != playerIndex || fromTile.army <= 50) {
+            return -1;
+        }
+
+        let toPossible = Array(this.width * this.height).fill(0).map((_, i) => i)
+            .filter(t => this.tiles.get(t).terrain == -1)
+            .filter(t => !this.cities.has(t));
+        let to = toPossible[Math.floor(Math.random() * toPossible.length)];
+
+        this.tiles.set(to, {army: fromTile.army - 50, terrain: playerIndex});
+        fromTile.army = 1;
+
+        if (this.controllers.has(tile)) {
+            this.controllers.delete(tile);
+            this.controllers.add(to);
+        }
+
+        return to;
+    }
+
     private applyMove(playerIndex: number, from: number, to: number) : boolean {
         let fromTile = this.tiles.get(from);
         let toTile = this.tiles.get(to);
@@ -152,22 +187,44 @@ export class Game {
             return false;
         }
 
-        if (toTile.army < fromTile.army) {
-            fromTile.army -= toTile.army;
-            this.tiles.set(to, fromTile);
-            this.tiles.delete(from);
+        if (toTile.terrain != fromTile.terrain) {
+            if (toTile.army < fromTile.army) { // from wins
+                fromTile.army -= toTile.army;
+                this.tiles.set(to, fromTile);
+                this.tiles.delete(from);
+    
+                if (this.controllers.has(to)) {
+                    this.controllers.delete(to);
+                    for (let [tile, data] of this.tiles) {
+                        if (data.terrain == toTile.terrain) {
+                            data.terrain = toTile.terrain;
+                        }
+                    }
+                }
+                if (this.controllers.has(from)) {
+                    this.controllers.delete(from);
+                    this.controllers.add(to);
+                }
+            } else if (toTile.army > fromTile.army) { // to wins
+                toTile.army -= fromTile.army;
+                this.tiles.delete(from);
 
-            if (this.controllers.has(to)) {
-                // TODO: conquer all of that person's territory?
-                this.controllers.delete(to);   
+                if (this.controllers.has(from)) {
+                    this.controllers.delete(from);
+                    for (let [tile, data] of this.tiles) {
+                        if (data.terrain == fromTile.terrain) {
+                            data.terrain = fromTile.terrain;
+                        }
+                    }
+                }
             }
+        } else {
+            toTile.army += fromTile.army;
+            this.tiles.delete(from);
             if (this.controllers.has(from)) {
                 this.controllers.delete(from);
                 this.controllers.add(to);
             }
-        } else if (toTile.army > fromTile.army) {
-            toTile.army -= fromTile.army;
-            this.tiles.delete(from);
         }
 
         return true;

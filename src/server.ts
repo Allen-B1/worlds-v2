@@ -161,6 +161,25 @@ app.post("/api/game/:game/split", function (req, res) {
     res.json(game.split(playerIndex, tile));
 });
 
+
+app.post("/api/game/:game/surrender", function (req, res) {
+    let game = games.get(req.params.game);
+    if (game == null) {
+        res.sendStatus(404);
+        return;
+    }
+
+    let key = req.query.id.toString();
+    let playerIndex = gamekeys.get(req.params.game)[key];
+    if (typeof playerIndex !== "number") {
+        res.sendStatus(403);
+        return;
+    }
+
+    game.surrender(playerIndex);
+    res.json(true);
+});
+
 setInterval(function() {
     for (let [id, room] of rooms.entries()) {
         if (room.shouldStart && !room2game.has(id)) {

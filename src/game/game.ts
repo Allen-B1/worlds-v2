@@ -154,6 +154,14 @@ export class Game {
         return true;
     }
 
+    surrender(playerIndex: number) {
+        for (let [tile, data] of this.tiles) {
+            if (data.terrain == playerIndex) {
+                this.deleteTile(tile);
+            }
+        }
+    }
+
     split(playerIndex: number, tile: number) : number {
         let fromTile = this.tiles.get(tile);
         if (fromTile.terrain != playerIndex || fromTile.army <= 50) {

@@ -62,7 +62,11 @@ onMount(async () => {
     });
 
     window.addEventListener("keydown", async function(ev) {
-        if (ev.code == "KeyQ") {
+        if (ev.code == "Escape") {
+            utils.xhr("POST", "/api/game/" + gameID + "/surrender?id=" + id);
+        }
+
+        if (ev.code == "KeyE") {
             let result = JSON.parse(await utils.xhr("POST", "/api/game/" + gameID + "/split?id=" + id + "&tile=" + selectedTile));
             if (result >= 0) {
                 selectedTile = result|0;

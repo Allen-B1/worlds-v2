@@ -105,7 +105,7 @@ export class Layout {
             layout.spawns.set(center, "");
         }
 
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 16; i++) {
             let center = Math.floor(Math.random() * layout.width * layout.height);
             let island = [];
             for (let m = 0; m < 2; m++) {

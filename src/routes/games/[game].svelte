@@ -245,6 +245,10 @@ function isVisible(game: Game, playerIndex: number | null, tile: number) {
         color: hsl(270, 50%, 50%); }
     .player-6 .name  {
         color: hsl(60, 50%, 50%); }
+    .player-7 .name  {
+        color: hsl(160, 50%, 50%); }
+    .player-8 .name  {
+        color: hsl(20, 25%, 55%); } 
     .player.dead {
         text-decoration: line-through; }
     .player.self {

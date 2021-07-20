@@ -224,6 +224,23 @@ export class Game {
             i++;
         }
 
+        // arrange extra spawns
+        let tiles: Array<number> = [];
+        for (let tile = 0; tile < game.width*game.height; tile++) {
+            if (game.tiles.get(tile).terrain == -1 && !game.swamps.has(tile)) {
+                tiles.push(tile);
+            }
+        }
+        while (i < game.players.length) {
+            let idx = (Math.random() * tiles.length)|0;
+            let tile = tiles[idx];
+            tiles.splice(idx, 1);
+
+            game.tiles.set(tile, {terrain:i, army: 1, building: Building.CORE});
+
+            i++;
+        }
+
         return game;
     }
 
@@ -349,6 +366,10 @@ export class Game {
                 fromTile.army = 1;
                 this.tiles.set(to, toTile);
     
+                if (toTile.building == Building.WALL) {
+                    toTile.building = Building.EMPTY;
+                }
+
                 if (toTile.building == Building.CORE) {
                     toTile.building = Building.CAMP;
                     for (let [_, data] of this.tiles) {

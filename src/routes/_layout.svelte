@@ -127,6 +127,10 @@
 			--background: hsl(270, 50%, 50%); }
 		.terrain-6 {
 			--background: hsl(60, 50%, 50%); }
+		.terrain-7 {
+			--background: hsl(160, 50%, 50%); }
+		.terrain-8 {
+			--background: hsl(20, 25%, 55%); }
 	</style>
 </svelte:head>
 

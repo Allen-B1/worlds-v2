@@ -330,7 +330,7 @@ export class Game {
             if (tileObj.army > 1) return false;
 
             tileObj.terrain = -1;
-            tileObj.army = 100;
+            tileObj.army = 250;
         }
 
         tileObj.building = building;

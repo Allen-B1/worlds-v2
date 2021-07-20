@@ -134,6 +134,7 @@ function make(building: Building) {
 function isVisible(game: Game, playerIndex: number, tile: number) {
     if (!game.fog) return true;
     if (playerIndex < 0) return false;
+    if (game.surrendered.has(playerIndex)) return true;
     for (let i = -1; i < 2; i++) {
         for (let j = -1; j < 2; j++) {
             if (game.tiles.get(tile + i + j * game.width).terrain == playerIndex) return true;

@@ -54,6 +54,12 @@ async function update() {
     }
 }
 
+const BUILDING_SHORTCUTS: utils.Object<Material, number | string> = {
+    [Building.MINE]: 1,
+    [Building.CAMP]: 2,
+    [Building.WALL]: 3,
+};
+
 function playAgain() {
     goto("/rooms/" + sessionStorage.getItem("room"));
 }
@@ -101,9 +107,10 @@ onMount(async () => {
             return;
         }
 
-        if (ev.code == "Backspace") {
-            make(Building.EMPTY);
-        }
+        if (ev.code == "Backspace") { make(Building.EMPTY); }
+        if (ev.key == "1") { make(Building.MINE); }
+        if (ev.key == "2") { make(Building.CAMP); }
+        if (ev.key == "3") { make(Building.WALL); }
 
         let newTile = selectedTile;
         if (ev.code == "KeyA") {
@@ -205,7 +212,7 @@ function isVisible(game: Game, playerIndex: number | null, tile: number) {
 
         background: #fff;
         padding: 8px 0;
-        min-width: 192px;
+        min-width: 256px;
         border: 1px solid #111;
         border-right: 0;
     }
@@ -214,7 +221,12 @@ function isVisible(game: Game, playerIndex: number | null, tile: number) {
         padding: 4px 16px;
         display: flex;
         flex-direction: row;
+        align-items: center;
         cursor: pointer; }
+    .building-key {
+        flex-basis: 16px;
+        background: #ddd; text-align: center; padding: 2px 4px; margin-right: 8px;  }
+    .building-key:empty { background: transparent; }
     .building-name { font-weight: bold;
         flex-basis: 48px;
         margin-right: 8px; }
@@ -280,12 +292,15 @@ function isVisible(game: Game, playerIndex: number | null, tile: number) {
 <div id="buildings">
     {#each Object.keys(BUILDING_INFO) as buildingID}
         <div class="building" on:click={() => make(buildingID)}>
+            <div class="building-key">{BUILDING_SHORTCUTS[buildingID] || ""}</div>
             <div class="building-name">{BUILDING_INFO[buildingID].name}</div>
+            {#if BUILDING_INFO[buildingID].cost != undefined}
             <div class="building-cost">
                 {#each Object.keys(BUILDING_INFO[buildingID].cost) as material}
                     {BUILDING_INFO[buildingID].cost[material]} {material}&nbsp;
                 {/each}
             </div>
+            {/if}
         </div>
     {/each}
 </div>

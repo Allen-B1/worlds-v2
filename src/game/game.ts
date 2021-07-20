@@ -15,7 +15,7 @@ export enum Building {
 
 export interface BuildingInfo {
     name: string,
-    cost: utils.Object<Material, number>,
+    cost?: utils.Object<Material, number>,
 };
 
 export const BUILDING_INFO: utils.Object<string, BuildingInfo> = {
@@ -27,9 +27,6 @@ export const BUILDING_INFO: utils.Object<string, BuildingInfo> = {
     },
     [Building.CORE]: {
         name: "Core",
-        cost: {
-            "": Infinity,
-        },
     },
     [Building.MINE]: {
         name: "Mine",
@@ -302,6 +299,7 @@ export class Game {
         if (!BUILDING_INFO[building]) return false;
 
         let costs =  BUILDING_INFO[building].cost;
+        if (costs == undefined) return false;
         for (let material in costs) {
             if (this.materials[playerIndex][material] < costs[material]) {
                 return false;

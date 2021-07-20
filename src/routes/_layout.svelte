@@ -88,9 +88,9 @@
 			content: " ";
 		}
 		.deposit-Au::after {
-			background: hsl(50, 30%, 70%);
+			background: hsl(40, 35%, 60%);
 			position: absolute;
-			border: 2px solid hsl(50, 30%, 50%);
+			border: 2px solid hsl(40, 45%, 40%);
 			width: 6px; height: 6px;
 			top: 4px; right: 4px;
 			content: " ";

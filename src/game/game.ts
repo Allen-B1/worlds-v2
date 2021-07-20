@@ -174,6 +174,7 @@ export class Game {
     turn: number
 
     #moves: utils.DefaultMap<number, [number, number][]>
+    #ended: boolean
 
     constructor() {
         this.#moves = new utils.DefaultMap([]);
@@ -181,13 +182,19 @@ export class Game {
     }
 
     get ended() : boolean {
+        if (this.#ended) return true;
+
         let alive = new Set();
         for (let [_, tile] of this.tiles) {
-            if (!this.surrendered.has(tile.terrain))
+            if (!this.surrendered.has(tile.terrain) && tile.terrain >= 0)
                 alive.add(tile.terrain);
         }
 
         return alive.size <= 1 && alive.size < this.players.length;
+    }
+
+    set ended(ended: boolean) {
+        this.#ended = ended;
     }
 
     static new(players: string[], layout: Layout, fog: boolean) {
@@ -224,7 +231,7 @@ export class Game {
     }
 
     nextTurn() : void {
-        console.log("--- " + this.turn + " " + utils.objectID(this));
+//        console.log("--- " + this.turn + " " + utils.objectID(this) + " --- " + this.ended);
         this.turn += 1;
 
         if (this.turn % 4 == 0) {
@@ -369,7 +376,11 @@ export class Game {
         this.tiles.delete(tile);
     }
 
-    toJSON = utils.toJSON
+    toJSON() {
+        let obj = utils.toJSON.call(this, true) as any;
+        obj.ended = this.ended;
+        return obj;
+    }
 
     static fromJSON(obj: any) : Game {
         let game = new Game();
@@ -388,6 +399,9 @@ export class Game {
         for (let key in obj.tiles) {
             game.tiles.set(Number(key), obj.tiles[key]);
         }
+
+        game.ended = obj.ended;
+
         return game;
     }
 }

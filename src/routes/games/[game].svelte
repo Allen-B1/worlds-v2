@@ -34,21 +34,23 @@ import {Building, BUILDING_INFO, Game, Material} from "../../game/game";
 export let gameID: string;
 export let game: Game;
 
-let playerIndex: number = -1;
+let playerIndex: number | null = null;
 
 let selectedTile: number = -1;
 let id: string;
 
+let updateIntervalID: number;
+
 let showGameEndedDialog = false;
 
-let wasGameEnded = false;
 async function update() {
     let gameJSON = JSON.parse(await utils.xhr("GET", "/api/game/" + gameID));
     game = Game.fromJSON(gameJSON);
 
-    if (game.ended && !wasGameEnded) {
-        wasGameEnded = true;
+    if (game.ended) {
         showGameEndedDialog = true;
+
+        clearInterval(updateIntervalID);
     }
 }
 
@@ -76,16 +78,17 @@ onMount(async () => {
 
     utils.xhr("GET", "/api/game/" + gameID + "/playerIndex?id=" + id).then(function(res) {
         playerIndex = Number(res);
+        if (playerIndex != playerIndex) playerIndex = -1;
     });
 
-    let interval = setInterval(update, 150);
+    updateIntervalID = setInterval(update, 150);
     preloadStore.subscribe((value) => {
         if (value) {
-            clearInterval(interval);
+            clearInterval(updateIntervalID);
         }
     });
     window.addEventListener("beforeunload", function() {
-        clearInterval(interval);
+        clearInterval(updateIntervalID);
     });
 
     window.addEventListener("keydown", async function(ev) {
@@ -131,10 +134,13 @@ function make(building: Building) {
     utils.xhr("POST", "/api/game/" + gameID + "/make?id=" + id + "&tile=" + selectedTile + "&building=" + building);
 }
 
-function isVisible(game: Game, playerIndex: number, tile: number) {
+function isVisible(game: Game, playerIndex: number | null, tile: number) {
     if (!game.fog) return true;
-    if (playerIndex < 0) return false;
-    if (game.surrendered.has(playerIndex)) return true;
+    if (playerIndex == null) return false;
+
+    // is spectating
+    if (!alive.has(playerIndex) || game.ended) return true;
+
     for (let i = -1; i < 2; i++) {
         for (let j = -1; j < 2; j++) {
             if (game.tiles.get(tile + i + j * game.width).terrain == playerIndex) return true;
@@ -229,6 +235,8 @@ function isVisible(game: Game, playerIndex: number, tile: number) {
         color: hsl(60, 50%, 50%); }
     .player.dead {
         text-decoration: line-through; }
+    .player.self {
+        font-weight: 400; }
     </style>
 
 <div class="map" style="width:{game.width*40}px;height:{game.height*40}px">
@@ -254,11 +262,12 @@ function isVisible(game: Game, playerIndex: number, tile: number) {
 <div id="players">
     <h5>Players</h5>
     {#each Array(game.players.length) as _, idx}
-        <div class="player player-{idx}" class:dead={!alive.has(idx)}>
+        <div class="player player-{idx}" class:dead={!alive.has(idx)} class:self={idx == playerIndex}>
             <div class="name">{game.players[idx]}</div>
         </div>
     {/each}
 </div>
+{#if playerIndex >= 0 && playerIndex != null}
 <div id="materials">
     {#each Object.values(Material) as material}
         <div>
@@ -267,6 +276,7 @@ function isVisible(game: Game, playerIndex: number, tile: number) {
         </div>
     {/each}
 </div>
+{/if}
 <div id="buildings">
     {#each Object.keys(BUILDING_INFO) as buildingID}
         <div class="building" on:click={() => make(buildingID)}>

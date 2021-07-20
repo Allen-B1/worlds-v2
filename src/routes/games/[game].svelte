@@ -69,6 +69,8 @@ $: {
     }
 }
 
+let hide = false;
+
 onMount(async () => {
     id = sessionStorage.getItem("sid");
 
@@ -89,6 +91,11 @@ onMount(async () => {
     window.addEventListener("keydown", async function(ev) {
         if (ev.code == "Escape") {
             utils.xhr("POST", "/api/game/" + gameID + "/surrender?id=" + id);
+        }
+
+        if (ev.code == "KeyH") {
+            hide = !hide;
+            return;
         }
 
         if (ev.code == "Backspace") {
@@ -134,6 +141,7 @@ function isVisible(game: Game, playerIndex: number, tile: number) {
     }
     return false;
 }
+
 </script>
 
 <style>
@@ -237,6 +245,7 @@ function isVisible(game: Game, playerIndex: number, tile: number) {
     {/each}
 </div>
 
+{#if !hide}
 <div id="turn">
     <div><b>Turn</b> {Math.floor(game.turn / 4)}</div>
 </div>
@@ -269,6 +278,8 @@ function isVisible(game: Game, playerIndex: number, tile: number) {
         </div>
     {/each}
 </div>
+
+{/if}
 
 <Dialog show={showGameEndedDialog} height={64} width={256}>
     <span slot="title">Game Ended</span>

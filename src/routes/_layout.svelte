@@ -74,7 +74,7 @@
 		.tile.invisible {
 			background: #111; }
 		.swamp.terrain--1 {
-			--background: hsl(240, 30%, 90%);
+			--background: hsl(240, 35%, 80%);
 		}
 		.swamp {
 			background: url(/tiles/swamp.svg) var(--background);

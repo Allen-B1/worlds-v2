@@ -231,8 +231,17 @@ export class Game {
             for (let [idx, tile] of this.tiles) {
                 switch (tile.building) {
                     case Building.CORE:
-                    case Building.CAMP:
                         tile.army++;
+                        break;
+                    case Building.CAMP:
+                        if (this.materials[tile.terrain][Material.IRON] > 0 || this.materials[tile.terrain][Material.GOLD] > 0) {
+                            if (this.materials[tile.terrain][Material.IRON] > 0) {
+                                this.materials[tile.terrain][Material.IRON] -= 1;
+                            } else {
+                                this.materials[tile.terrain][Material.GOLD] -= 1;
+                            }
+                            tile.army++;
+                        }
                         break;
                     case Building.MINE:
                         this.materials[tile.terrain][this.deposits.get(idx)] = (this.materials[tile.terrain][this.deposits.get(idx)]|0) + 1;

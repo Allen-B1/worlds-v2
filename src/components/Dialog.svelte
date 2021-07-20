@@ -26,11 +26,13 @@
     flex-direction: column;
 }
 h5 { text-align: center; }
-.buttons {
-    text-align: right;
+.buttons > :global(*) {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
 }
 .buttons :global(.button), .buttons :global(button) {
-    margin-left: 8px;
+    margin-bottom: 8px;
 }
 </style>
 

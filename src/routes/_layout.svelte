@@ -36,6 +36,7 @@
 			font-family: 'Roboto';
 			font-weight: 500;
 			text-decoration: none;
+			text-align: center;
 			cursor: pointer;
 
 			border: 0; font-size: 14px;
@@ -58,6 +59,8 @@
 		button.inactive {
 			background: hsl(0, 0%, 75%);
 		}
+
+
 		.map {
 			position: relative;
 			background: #fff; }
@@ -131,6 +134,62 @@
 			--background: hsl(160, 50%, 50%); }
 		.terrain-8 {
 			--background: hsl(20, 25%, 55%); }
+
+		/* Metadata Boxes for games/replays */
+		#float-info-turn {
+			padding: 16px;
+			background: #fff;
+			min-width: 64px;
+			margin-bottom: 16px;
+
+			position: fixed; z-index: 3;
+			top: 16px;
+			left: 0;
+
+			border: 1px solid #111;
+			border-left: 0;
+    	}
+
+		.float-info {
+			padding: 16px 24px;
+			padding-bottom: 8px;
+			background: #fff;
+			margin-bottom: 16px;
+			border: 1px solid #111;
+		}
+
+		#float-info-players { 
+			position: fixed; z-index: 3;
+			top: 88px;
+			left: 0;
+			min-width: 240px;
+			border-left: 0;
+		}
+		#float-info-players .player {
+			padding-bottom: 8px;
+		}
+		.player-0 .name {
+			color: hsl(100, 50%, 50%); }
+		.player-1 .name {
+			color: hsl(320, 50%, 50%); }
+		.player-2 .name {
+			color: hsl(30, 50%, 50%); }
+		.player-3 .name {
+			color: hsl(200, 50%, 50%); }
+		.player-4 .name  {
+			color: hsl(0, 50%, 50%); }
+		.player-5 .name  {
+			color: hsl(270, 50%, 50%); }
+		.player-6 .name  {
+			color: hsl(60, 50%, 50%); }
+		.player-7 .name  {
+			color: hsl(160, 50%, 50%); }
+		.player-8 .name  {
+			color: hsl(20, 25%, 55%); } 
+		.player.dead {
+			text-decoration: line-through; }
+		.player.self {
+			font-weight: 400; }
 	</style>
 </svelte:head>
 

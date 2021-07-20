@@ -1,3 +1,5 @@
+TODO
+<!--
 <script context="module">
 import {Layout} from "../game/game";
 export async function preload(page, session) {
@@ -72,3 +74,5 @@ let spawns = Array.from(layout.spawns.keys());
         </div>
     {/each}
 </div>
+
+-->

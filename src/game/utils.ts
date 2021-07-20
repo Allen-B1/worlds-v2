@@ -21,6 +21,16 @@ export function objectFrom<K, V>(entries: Iterable<[K, V]>) : Object<K, V> {
 export function toJSON<T>(this: T, force?: boolean) : object {
     if (this == null) return null;
 
+    if (typeof this != "object") return this as unknown as object;
+
+    if (this instanceof Array) {
+        let arr = [];
+        for (let i = 0; i < this.length; i++) {
+            arr[i] = toJSON.call(this[i]);
+        }
+        return arr;
+    }
+
     if (this instanceof Set) {
         return Array.from(this) as object;
     }
@@ -29,7 +39,7 @@ export function toJSON<T>(this: T, force?: boolean) : object {
         return objectFrom(this) as object;
     }
 
-    if ((this as any).toJSON == toJSON || force) {
+    if (!(this as any).toJSON || (this as any).toJSON == toJSON || force) {
         let obj = {} as any;
         for (let key in this) {
             if (this[key] instanceof Function) continue;

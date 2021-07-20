@@ -4,6 +4,7 @@ import * as sapper from '@sapper/server';
 
 import * as utils from './game/utils';
 import {Room} from './game/room';
+import {Replay} from './game/replay';
 import {Building, Game,Layout, LayoutSettings} from './game/game';
 
 // shut the freaking typechecker up
@@ -18,6 +19,7 @@ let app = express();
 let rooms = new Map<string, Room>();
 
 let games = new Map<string, Game>();
+let replays = new Map<string, Replay>();
 let room2game = new Map<string, string>();
 let gamekeys = new Map<string, utils.Object<string, number>>();
 
@@ -234,6 +236,17 @@ app.post("/api/game/:game/surrender", function (req, res) {
     res.json(true);
 });
 
+app.get("/api/game/:game/replay.json", function (req, res) {
+    let replay = replays.get(req.params.game);
+    if (replay == null)  {
+        res.sendStatus(404);
+        return;
+    }
+
+    res.set("Content-Disposition", "attachment; filename=replay-" + req.params.game + ".json");
+    res.json(replay);
+});
+
 setInterval(function() {
     for (let [id, room] of rooms.entries()) {
         if (room.shouldStart && !room2game.has(id)) {
@@ -242,6 +255,7 @@ setInterval(function() {
                 let gameID = utils.objectID(game);
 
                 games.set(gameID, game);
+                replays.set(gameID, Replay.new(game));
                 gamekeys.set(gameID, mapping);
                 room2game.set(id, gameID);
 
@@ -252,8 +266,12 @@ setInterval(function() {
             })();
         }
     }
-    for (let game of games.values()) {
-        game.nextTurn();
+    for (let [id, game] of games) {
+        if (!game.ended) {
+            game.nextTurn();
+
+            replays.get(id).update(game);
+        }
     }
 }, 250);
 

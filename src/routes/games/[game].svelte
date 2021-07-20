@@ -1,7 +1,3 @@
-<svelte:head>
-	<title>worlds 2</title>
-</svelte:head>
-
 <script context="module" lang="ts">
     export const preload = async function(this, page, session) {
         let gameID = page.params.game;
@@ -159,39 +155,6 @@ function isVisible(game: Game, playerIndex: number | null, tile: number) {
 </script>
 
 <style>
-    .map { margin-right: 16px;}
-    
-    #turn {
-        padding: 16px;
-        background: #fff;
-        min-width: 64px;
-        margin-bottom: 16px;
-
-        position: fixed; z-index: 3;
-        top: 16px;
-        left: 0;
-
-        border: 1px solid #111;
-        border-left: 0;
-    }
-
-    #players, #materials {
-        padding: 16px 24px;
-        padding-bottom: 8px;
-        background: #fff;
-        margin-bottom: 16px;
-        border: 1px solid #111;
-    }
-    #players { 
-        position: fixed; z-index: 3;
-        top: 88px;
-        left: 0;
-        min-width: 240px;
-        border-left: 0;
-    }
-    #players .player {
-        padding-bottom: 8px;
-    }
     #materials {
         display: inline-block;
         padding-bottom: 16px;
@@ -230,30 +193,7 @@ function isVisible(game: Game, playerIndex: number | null, tile: number) {
     .building-name { font-weight: bold;
         flex-basis: 48px;
         margin-right: 8px; }
-
-    .player-0 .name {
-        color: hsl(100, 50%, 50%); }
-    .player-1 .name {
-        color: hsl(320, 50%, 50%); }
-    .player-2 .name {
-        color: hsl(30, 50%, 50%); }
-    .player-3 .name {
-        color: hsl(200, 50%, 50%); }
-    .player-4 .name  {
-        color: hsl(0, 50%, 50%); }
-    .player-5 .name  {
-        color: hsl(270, 50%, 50%); }
-    .player-6 .name  {
-        color: hsl(60, 50%, 50%); }
-    .player-7 .name  {
-        color: hsl(160, 50%, 50%); }
-    .player-8 .name  {
-        color: hsl(20, 25%, 55%); } 
-    .player.dead {
-        text-decoration: line-through; }
-    .player.self {
-        font-weight: 400; }
-    </style>
+            </style>
 
 <div class="map" style="width:{game.width*40}px;height:{game.height*40}px">
     {#each Array(game.width * game.height) as _, idx}
@@ -271,11 +211,11 @@ function isVisible(game: Game, playerIndex: number | null, tile: number) {
 </div>
 
 {#if !hide}
-<div id="turn">
+<div id="float-info-turn">
     <div><b>Turn</b> {Math.floor(game.turn / 4)}</div>
 </div>
 
-<div id="players">
+<div id="float-info-players" class="float-info">
     <h5>Players</h5>
     {#each Array(game.players.length) as _, idx}
         <div class="player player-{idx}" class:dead={!alive.has(idx)} class:self={idx == playerIndex}>
@@ -284,7 +224,7 @@ function isVisible(game: Game, playerIndex: number | null, tile: number) {
     {/each}
 </div>
 {#if playerIndex >= 0 && playerIndex != null}
-<div id="materials">
+<div id="materials" class="float-info">
     {#each Object.values(Material) as material}
         <div>
             <span><b>{material}</b></span>
@@ -311,10 +251,10 @@ function isVisible(game: Game, playerIndex: number | null, tile: number) {
 
 {/if}
 
-<Dialog show={showGameEndedDialog} height={64} width={256}>
+<Dialog show={showGameEndedDialog} height={128} width={256}>
     <span slot="title">Game Ended</span>
     <span slot="buttons">
-        <button on:click={() => showGameEndedDialog = false}>Spectate</button>
-        <button on:click={playAgain}>Play Again</button>
+        <button class="big" on:click={playAgain}>Play Again</button>
+        <a class="button" href="/api/game/{gameID}/replay.json" target="_blank">Download Replay</a>
     </span>
 </Dialog>

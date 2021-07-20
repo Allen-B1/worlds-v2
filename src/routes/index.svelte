@@ -13,11 +13,11 @@
 </style>
 
 <svelte:head>
-	<title>squares</title>
+	<title>worlds 2</title>
 </svelte:head>
 
 <main>
-	<h1>squares</h1>
+	<h1>worlds 2</h1>
 
 	<div><input type="text" value={typeof localStorage != "undefined" ? localStorage.getItem("name") : ""} class="textfield" placeholder="anonymous" on:input={function() {localStorage.setItem("name", this.value)}}></div>
 	<div id="buttons">

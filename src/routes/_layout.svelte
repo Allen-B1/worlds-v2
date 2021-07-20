@@ -41,7 +41,7 @@
 			border: 0; font-size: 14px;
 			padding: 4px 12px;
 			min-width: 36px; 
-			background: orange;
+			background: hsl(0, 65%, 65%);
 
 			position: relative;
 			top: -2px; left: -2px;
@@ -55,63 +55,78 @@
 			padding: 8px 24px;
 			min-width: 72px; 
 			font-size: 16px; }
+		button.inactive {
+			background: hsl(0, 0%, 75%);
+		}
 		.map {
 			position: relative;
 			background: #fff; }
 		.tile {
+			background: var(--background);
 			color: #fff;
-			text-align: center; line-height: 24px;
+			text-align: center; line-height: 40px;
 			position: absolute;
-			width: 24px; height: 24px; }
+			font-size: 14px;
+			width: 40px; height: 40px; }
 		.tile.selected {
-			outline: 2px solid #aaa; }
-		.terrain--1.city {
-			background: #777; }
-		.swamp {
-			background: #aaa; 
+			outline: 2px solid #aaa;
+			z-index: 1; }
+		.tile.invisible {
+			background: #111; }
+		.swamp.terrain--1 {
+			--background: hsl(240, 30%, 90%);
 		}
-		:not(.swamp).controller::after {
+		.swamp {
+			background: url(/tiles/swamp.svg) var(--background);
+		}
+		.deposit-Fe::after {
+			background: hsl(0, 0%, 70%);
 			position: absolute;
-			top: 0;
-			right: 0;
-			width: 8px;
-			height: 8px;
-			border-radius: 0 0 0 8px;
-			background: rgba(0,0,0,0.3);
-			content: " "; }
-		.swamp::after {
-			position: absolute;
-			top: 4px;
-			left: 4px;
-			width: 16px;
-			height: 12px;
-			border: 3px solid rgba(0,0,0,0.3);
+			border: 2px solid hsl(0, 0%, 50%);
+			width: 6px; height: 6px;
+			top: 4px; right: 4px;
 			content: " ";
-			border-left: 0;
-			border-right: 0; }
-		.swamp::before {
+		}
+		.deposit-Au::after {
+			background: hsl(50, 30%, 70%);
 			position: absolute;
-			top: 11px; left: 6px;
-			width: 12px; height: 3px;
-			background: rgba(0,0,0,0.3);
-			content: " "; }
+			border: 2px solid hsl(50, 30%, 50%);
+			width: 6px; height: 6px;
+			top: 4px; right: 4px;
+			content: " ";
+		}
+
+		.building-core {
+			background: url(/tiles/core.svg) var(--background);
+		}
+		.building-camp {
+			background: url(/tiles/camp.svg) var(--background);
+		}
+		.building-mine {
+			background: url(/tiles/mine.svg) var(--background);
+		}
+		.building-wall {
+			background: hsl(200, 50%, 15%);
+			color: #fff !important;
+		}
+
 		.terrain--2 {
-			background: hsl(200, 50%, 15%); }
-		.terrain--1:not(.city) { color: #111; }
+			--background: hsl(200, 50%, 15%); }
+		.terrain--1 { color: #111; }
 		.terrain-0 {
-			background: hsl(100, 50%, 50%); }
+			--background: hsl(100, 50%, 50%); }
 		.terrain-1 {
-			background: hsl(320, 50%, 50%); }
+			--background: hsl(320, 50%, 50%); }
 		.terrain-2 {
-			background: hsl(30, 50%, 50%); }
+			--background: hsl(30, 50%, 50%); }
 		.terrain-3 {
-			background: hsl(200, 50%, 50%); }
+			--background: hsl(200, 50%, 50%); }
 		.terrain-4 {
-			background: hsl(0, 50%, 50%); }
+			--background: hsl(0, 50%, 50%); }
 		.terrain-5 {
-			background: hsl(270, 50%, 50%); }
+			--background: hsl(270, 50%, 50%); }
 		.terrain-6 {
-			background: hsl(60, 50%, 50%); }
+			--background: hsl(60, 50%, 50%); }
 	</style>
 </svelte:head>
 

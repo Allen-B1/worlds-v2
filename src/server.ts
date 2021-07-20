@@ -4,7 +4,7 @@ import * as sapper from '@sapper/server';
 
 import * as utils from './game/utils';
 import {Room} from './game/room';
-import {Game,Layout, LayoutSettings} from './game/game';
+import {Building, Game,Layout, LayoutSettings} from './game/game';
 
 // shut the freaking typechecker up
 void(utils);
@@ -27,7 +27,7 @@ app.post("/api/room/:room/join", function(req, res) {
         if (req.params.room == "1v1") {
             room = new Room(2);
         } else if (req.params.room == "ffa") {
-            room = new Room(8);
+            room = new Room(6);
         } else if (req.params.room == "0") {
             room = new Room(1);  
         } else {
@@ -105,6 +105,24 @@ app.post("/api/room/:room/settings_map", function (req, res) {
     res.json(true);
 });
 
+app.post("/api/room/:room/settings_fog", function (req, res) {
+    let room = rooms.get(req.params.room);
+    if (room == null) {
+        res.sendStatus(404);
+        return;
+    }
+
+    let id = String(req.query.id);
+    if (!room.isHost(id)) {
+        res.sendStatus(403);
+        return;
+    }
+
+    room.settings_fog = Boolean(Number(req.query.fog));
+
+    res.json(true);
+});
+
 
 app.get("/api/room/:room", function (req, res) {
     let room = rooms.get(req.params.room);
@@ -141,6 +159,23 @@ app.get("/api/game/:game", function (req, res) {
     res.json(game);
 });
 
+app.get("/api/game/:game/playerIndex", function (req, res) {
+    let game = games.get(req.params.game);
+    if (game == null) {
+        res.sendStatus(404);
+        return;
+    }
+
+    let key = req.query.id.toString();
+    let playerIndex = gamekeys.get(req.params.game)[key];
+    if (typeof playerIndex !== "number") {
+        res.sendStatus(403);
+        return;
+    }
+
+    res.json(playerIndex);
+});
+
 app.post("/api/game/:game/move", function (req, res) {
     let game = games.get(req.params.game);
     if (game == null) {
@@ -161,7 +196,7 @@ app.post("/api/game/:game/move", function (req, res) {
     res.json(game.move(playerIndex, from, to));
 });
 
-app.post("/api/game/:game/split", function (req, res) {
+app.post("/api/game/:game/make", function (req, res) {
     let game = games.get(req.params.game);
     if (game == null) {
         res.sendStatus(404);
@@ -176,10 +211,10 @@ app.post("/api/game/:game/split", function (req, res) {
     }
 
     let tile = (req.query.tile as any) | 0;
+    let building = String(req.query.building) as Building;
 
-    res.json(game.split(playerIndex, tile));
+    res.json(game.make(playerIndex, tile, building));
 });
-
 
 app.post("/api/game/:game/surrender", function (req, res) {
     let game = games.get(req.params.game);

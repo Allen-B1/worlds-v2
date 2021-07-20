@@ -91,6 +91,9 @@
         utils.xhr("POST", "/api/room/" + roomID + "/settings_map?id=" + id + "&map=" + url);
     }
 
+    function settings_fog(fog: boolean) {
+        utils.xhr("POST", "/api/room/" + roomID + "/settings_fog?id=" + id + "&fog=" + (fog?1:0));
+    }
 </script>
 
 <style>
@@ -122,7 +125,7 @@
     #settings {
         padding: 16px 32px;
         padding-bottom: 12px;
-        width: 200px;
+        width: 240px;
         background: #fff; }
     .setting {
         display: flex;
@@ -136,11 +139,10 @@
 
     h5 { text-align: center; }
     #buttons { text-align: center; margin-top: 8px; }
-    #force.inactive { background: #ccc; }
 </style>
 
 <svelte:head>
-    <title>squares - {isCustom ? "custom" : roomID}</title>
+    <title>worlds 2 - {isCustom ? "custom" : roomID}</title>
 </svelte:head>
 
 <div id="player-count" style="margin-bottom:16px"><span>{room ? room.players.size : 0}</span> of <span>{room ? (room.maxPlayers || "inf") : 0}</span></div>
@@ -157,6 +159,9 @@
     </div>
     <div id="settings">
         <h5>Settings</h5>
+        <div class="setting"><span>Fog of War: </span><input type="checkbox" disabled={!isHost}
+            checked={room.settings_fog}
+            on:input={function() { settings_fog(this.checked); }}></div>
         {#if isHost || room.settings_map != ""} 
         <div class="setting">
             {#if room.settings_map}
@@ -167,15 +172,6 @@
         <div class="setting"><span>Mountain Density: </span><input type="number" min="0" max="1" step="0.01" class="textfield" disabled={!isHost}
             value={room.settings_layout.mountain_density}
             on:input={function() { settings_layout("mountain_density", this.value); }}></div>
-        <div class="setting"><span>Swamp Density: </span><input type="number" min="0" max="1" step="0.01" class="textfield" disabled={!isHost}
-            value={room.settings_layout.swamp_density}
-            on:input={function() { settings_layout("swamp_density", this.value); }}></div>
-        <div class="setting"><span>City Count: </span><input type="number" min="0" class="textfield" disabled={!isHost}
-            value={room.settings_layout.city_count}
-            on:input={function() { settings_layout("city_count", this.value); }}></div>
-        <div class="setting"><span>Map Size: </span><input type="number" min="7" max="40" class="textfield" disabled={!isHost} 
-            value={room.settings_layout.size}
-            on:input={function() { settings_layout("size", this.value); }}></div>
         {/if}
     </div>
 </div>

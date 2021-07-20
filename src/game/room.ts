@@ -10,19 +10,16 @@ export class Room {
 
     settings_layout: LayoutSettings
     settings_map: string
+    settings_fog: boolean
 
     constructor(maxPlayers: number = Infinity) {
         this.players = new Map();
         this.force = new Set();
         this.maxPlayers = maxPlayers;
-        this.settings_layout = {
-            mountain_density: 0.25,
-            swamp_density: 0.1,
-            city_count: 5,
-            size: 20
-        };
+        this.settings_layout = {mountain_density: 0.2};
         this.host = "";
         this.settings_map = "";
+        this.settings_fog = true;
     }
 
     isHost(id: string) : boolean {
@@ -90,7 +87,7 @@ export class Room {
             layout = Layout.randomized(this.players.size, this.settings_layout);
         }
 
-        return [Game.new(playersList, layout), assoc];
+        return [Game.new(playersList, layout, this.settings_fog), assoc];
     }
 
     toJSON() {
@@ -128,6 +125,7 @@ export class Room {
         room.maxPlayers = obj.maxPlayers
         room.settings_layout = obj.settings_layout;
         room.settings_map = obj.settings_map;
+        room.settings_fog = obj.settings_fog;
         room.host = obj.host.toString();
 
         return room;

@@ -1,3 +1,7 @@
+<svelte:head>
+	<title>worlds 2</title>
+</svelte:head>
+
 <script context="module" lang="ts">
     export const preload = async function(this, page, session) {
         let gameID = page.params.game;
@@ -25,10 +29,12 @@ let {session, preloading:preloadStore} = stores();
 
 import * as utils from "../../game/utils";
 import { onMount } from "svelte";
-import {Game} from "../../game/game";
+import {Building, BUILDING_INFO, Game, Material} from "../../game/game";
 
 export let gameID: string;
 export let game: Game;
+
+let playerIndex: number = -1;
 
 let selectedTile: number = -1;
 let id: string;
@@ -55,7 +61,8 @@ $: {
     if (game != null) {
         alive.clear();
         for (let [_, tile] of game.tiles) {
-            alive.add(tile.terrain);
+            if (!game.surrendered.has(tile.terrain))
+                alive.add(tile.terrain);
         }
 
         alive = alive;
@@ -64,6 +71,10 @@ $: {
 
 onMount(async () => {
     id = sessionStorage.getItem("sid");
+
+    utils.xhr("GET", "/api/game/" + gameID + "/playerIndex?id=" + id).then(function(res) {
+        playerIndex = Number(res);
+    });
 
     let interval = setInterval(update, 150);
     preloadStore.subscribe((value) => {
@@ -80,30 +91,21 @@ onMount(async () => {
             utils.xhr("POST", "/api/game/" + gameID + "/surrender?id=" + id);
         }
 
-        if (ev.code == "KeyE") {
-            let result = JSON.parse(await utils.xhr("POST", "/api/game/" + gameID + "/split?id=" + id + "&tile=" + selectedTile));
-            if (result >= 0) {
-                selectedTile = result|0;
-            }
-            return;
+        if (ev.code == "Backspace") {
+            make(Building.EMPTY);
         }
 
         let newTile = selectedTile;
         if (ev.code == "KeyA") {
             newTile -= 1;
-            if (newTile % game.width == game.width - 1) {
-                newTile += game.width;
-            }
         } else if (ev.code == "KeyW") {
             newTile -= game.width;
         } else if (ev.code == "KeyS") {
             newTile += game.width;
         } else if (ev.code == "KeyD") {
             newTile += 1;
-            if (newTile % game.width == 0) {
-                newTile -= game.width;
-            }
         }
+
         if (selectedTile != newTile && game.tiles.get(newTile).terrain != -2) {
             utils.xhr("POST", "/api/game/" + gameID + "/move?id=" + id + "&from=" + selectedTile + "&to=" + newTile);
             selectedTile = newTile;
@@ -117,36 +119,91 @@ function displayNumber(num: number) : string {
     }
     return String(num);
 }
+
+function make(building: Building) {
+    utils.xhr("POST", "/api/game/" + gameID + "/make?id=" + id + "&tile=" + selectedTile + "&building=" + building);
+}
+
+function isVisible(game: Game, playerIndex: number, tile: number) {
+    if (!game.fog) return true;
+    if (playerIndex < 0) return false;
+    for (let i = -1; i < 2; i++) {
+        for (let j = -1; j < 2; j++) {
+            if (game.tiles.get(tile + i + j * game.width).terrain == playerIndex) return true;
+        }
+    }
+    return false;
+}
 </script>
 
 <style>
-    main { 
-        margin-top: 128px;
-        margin-bottom: 128px;
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: flex-start;
-    }
-
     .map { margin-right: 16px;}
     
     #turn {
         padding: 16px;
         background: #fff;
-        width: 96px;
+        min-width: 64px;
         margin-bottom: 16px;
+
+        position: fixed; z-index: 3;
+        top: 16px;
+        left: 0;
+
+        border: 1px solid #111;
+        border-left: 0;
     }
 
-    #players {
+    #players, #materials {
         padding: 16px 24px;
         padding-bottom: 8px;
         background: #fff;
+        margin-bottom: 16px;
+        border: 1px solid #111;
+    }
+    #players { 
+        position: fixed; z-index: 3;
+        top: 88px;
+        left: 0;
         min-width: 240px;
+        border-left: 0;
     }
     #players .player {
         padding-bottom: 8px;
     }
+    #materials {
+        display: inline-block;
+        padding-bottom: 16px;
+        min-width: 64px;
+        border-right: 0;
+
+        position: fixed; z-index: 3;
+        top: 16px; right: 0;
+    }
+    #materials > div > span:last-child {
+        float: right;
+    }
+
+    #buildings {
+        position: fixed; z-index: 3;
+        right: 0;
+        bottom: 16px;
+
+        background: #fff;
+        padding: 8px 0;
+        min-width: 192px;
+        border: 1px solid #111;
+        border-right: 0;
+    }
+
+    #buildings .building {
+        padding: 4px 16px;
+        display: flex;
+        flex-direction: row;
+        cursor: pointer; }
+    .building-name { font-weight: bold;
+        flex-basis: 48px;
+        margin-right: 8px; }
+
     .player-0 .name {
         color: hsl(100, 50%, 50%); }
     .player-1 .name {
@@ -165,29 +222,53 @@ function displayNumber(num: number) : string {
         text-decoration: line-through; }
     </style>
 
-<main>
-    <div class="map" style="width:{game.width*24}px;height:{game.height*24}px">
-        {#each Array(game.width * game.height) as _, idx}
-            <div class="tile terrain-{game.tiles.get(idx).terrain}" id="tile-{idx}" style="left:{24*(idx % game.width)}px;top:{24*Math.floor(idx / game.width)}px" class:swamp={game.swamps.has(idx)} class:city={game.cities.has(idx)} class:controller={game.controllers.has(idx)} on:click={() => selectedTile = idx} class:selected={selectedTile == idx}>
+<div class="map" style="width:{game.width*40}px;height:{game.height*40}px">
+    {#each Array(game.width * game.height) as _, idx}
+        {#if isVisible(game, playerIndex, idx)}
+            <div class="tile terrain-{game.tiles.get(idx).terrain} building-{game.tiles.get(idx).building} deposit-{game.deposits.get(idx)}"
+                id="tile-{idx}" style="left:{40*(idx % game.width)}px;top:{40*Math.floor(idx / game.width)}px"
+                class:swamp={game.swamps.has(idx)} on:click={() => selectedTile = idx} class:selected={selectedTile == idx}>
                 {game.tiles.get(idx).army != 0 ? displayNumber(game.tiles.get(idx).army) : ""}
             </div>
-        {/each}
-    </div>
-    <div>
-        <div id="turn">
-            <h5>Turn</h5>
-            <div>{Math.floor(game.turn / 4)}</div>
+        {:else}
+            <div class="tile invisible"
+                id="tile-{idx}" style="left:{40*(idx % game.width)}px;top:{40*Math.floor(idx / game.width)}px"></div>
+        {/if}
+    {/each}
+</div>
+
+<div id="turn">
+    <div><b>Turn</b> {Math.floor(game.turn / 4)}</div>
+</div>
+
+<div id="players">
+    <h5>Players</h5>
+    {#each Array(game.players.length) as _, idx}
+        <div class="player player-{idx}" class:dead={!alive.has(idx)}>
+            <div class="name">{game.players[idx]}</div>
         </div>
-        <div id="players">
-            <h5>Players</h5>
-            {#each Array(game.players.length) as _, idx}
-                <div class="player player-{idx}" class:dead={!alive.has(idx)}>
-                    <div class="name">{game.players[idx]}</div>
-                </div>
-            {/each}
+    {/each}
+</div>
+<div id="materials">
+    {#each Object.values(Material) as material}
+        <div>
+            <span><b>{material}</b></span>
+            <span>{playerIndex >= 0 && game.materials[playerIndex][material] | 0}</span>
         </div>
-    </div>
-</main>
+    {/each}
+</div>
+<div id="buildings">
+    {#each Object.keys(BUILDING_INFO) as buildingID}
+        <div class="building" on:click={() => make(buildingID)}>
+            <div class="building-name">{BUILDING_INFO[buildingID].name}</div>
+            <div class="building-cost">
+                {#each Object.keys(BUILDING_INFO[buildingID].cost) as material}
+                    {BUILDING_INFO[buildingID].cost[material]} {material}&nbsp;
+                {/each}
+            </div>
+        </div>
+    {/each}
+</div>
 
 <Dialog show={showGameEndedDialog} height={64} width={256}>
     <span slot="title">Game Ended</span>

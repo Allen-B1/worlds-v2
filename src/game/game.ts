@@ -269,13 +269,21 @@ export class Game {
                         break;
                 }
             }
+
+            for (let swamp of this.swamps) {
+                let tile = this.tiles.get(swamp);
+                tile.army -= 1;
+                if (tile.army <= 0) {
+                    this.deleteTile(swamp);
+                }
+            }
         }
 
         if (this.turn % 2 == 0) {
             for (let swamp of this.swamps) {
                 let tile = this.tiles.get(swamp);
-                tile.army -= 1;
-                if (tile.army <= 0) {
+                if (tile.army == 1) {
+                    tile.army = 0;
                     this.deleteTile(swamp);
                 }
             }    

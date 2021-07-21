@@ -107,7 +107,7 @@ export class Layout {
             layout.spawns.set(center, "");
         }
 
-        for (let i = 0; i < 24; i++) {
+        for (let i = 0; i < 64; i++) {
             let center = Math.floor(Math.random() * layout.width * layout.height);
             let island = [];
             for (let m = 0; m < 2; m++) {
@@ -384,14 +384,13 @@ export class Game {
                 }
 
                 if (toTile.building == Building.CORE) {
-                    toTile.building = Building.CAMP;
-                    let hasCore= false;
+                    let cores = 0;
                     for (let [_, data] of this.tiles) {
-                        if (data.building == Building.CORE) hasCore = true;
+                        if (data.building == Building.CORE && data.terrain == toTerrain) { cores++; }
                     }
-                    if (hasCore) {
+                    if (cores > 0) {
                         for (let i = -3; i < 4; i++) {
-                            for (let j = -3; j < 4; i++) {
+                            for (let j = -3; j < 4; j++) {
                                 let tile = this.tiles.get(to + i + j * this.width);
                                 if (tile.terrain == toTerrain) {
                                     tile.terrain = fromTile.terrain;

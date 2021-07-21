@@ -256,5 +256,6 @@ function isVisible(game: Game, playerIndex: number | null, tile: number) {
     <span slot="buttons">
         <button class="big" on:click={playAgain}>Play Again</button>
         <a class="button" href="/api/game/{gameID}/replay.json" target="_blank">Download Replay</a>
+        <a class="button" href="/replay?url=/api/game/{gameID}/replay.json" target="_blank">Watch Replay</a>
     </span>
 </Dialog>

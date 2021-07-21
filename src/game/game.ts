@@ -1,3 +1,4 @@
+import { dataset_dev } from "svelte/internal";
 import * as utils from "./utils";
 
 export enum Material {
@@ -27,6 +28,10 @@ export const BUILDING_INFO: utils.Object<string, BuildingInfo> = {
     },
     [Building.CORE]: {
         name: "Core",
+        cost: {
+            [Material.IRON]: 250,
+            [Material.GOLD]: 100,
+        }
     },
     [Building.MINE]: {
         name: "Mine",
@@ -380,9 +385,24 @@ export class Game {
 
                 if (toTile.building == Building.CORE) {
                     toTile.building = Building.CAMP;
+                    let hasCore= false;
                     for (let [_, data] of this.tiles) {
-                        if (data.terrain == toTerrain) {
-                            data.terrain = fromTile.terrain;
+                        if (data.building == Building.CORE) hasCore = true;
+                    }
+                    if (hasCore) {
+                        for (let i = -3; i < 4; i++) {
+                            for (let j = -3; j < 4; i++) {
+                                let tile = this.tiles.get(to + i + j * this.width);
+                                if (tile.terrain == toTerrain) {
+                                    tile.terrain = fromTile.terrain;
+                                }
+                            }
+                        }
+                    } else {
+                        for (let [_, data] of this.tiles) {
+                            if (data.terrain == toTerrain) {
+                                data.terrain = fromTile.terrain;
+                            }
                         }
                     }
                 }

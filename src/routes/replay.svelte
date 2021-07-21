@@ -1,6 +1,8 @@
 <script context="module" lang="ts">
     import {Replay} from "../game/replay";
     export async function preload(page, session) {
+        if (!page.query.url) return {replay: null, url: ""};
+
         let json = await(await this.fetch(page.query.url)).json();
         let url = page.query.url;
         let replay = Replay.fromJSON(json);
@@ -11,10 +13,12 @@
 
 <svelte:head>
 	<title>worlds 2 - replay</title>
-    <meta name="description" content="{replay.updates.length - 1} turns | {replay.players.join(", ")}">
+    <meta name="description" content={replay ? replay.updates.length - 1 + " turns | " + replay.players.join(", ") : "view a replay"}>
 </svelte:head>
 
 <script lang="ts">
+import Dialog from '../components/Dialog.svelte';
+
 import { Building } from "../game/game";
 import type { Tile } from "../game/game";
 import { onMount } from "svelte";
@@ -24,7 +28,7 @@ export let url: string;
 
 let hide = false;
 
-let tiles: Map<number, Tile> = new Map(replay.tiles);
+let tiles: Map<number, Tile> = new Map();
 let surrendered: Set<number> = new Set();
 
 let alive = new Set();
@@ -120,6 +124,9 @@ speed.subscribe((value) => {
 });
 
 function onTurnInput() { speed.set(0); goToTurn(this.value * 4); }
+
+if (replay != null)
+    reset();
 </script>
 
 <style>
@@ -137,6 +144,7 @@ function onTurnInput() { speed.set(0); goToTurn(this.value * 4); }
     }
 </style>
 
+{#if replay != null}
 {#if !hide}
 <div id="float-info-turn">
     <div><b>Turn</b> <input style="width:5em" class="textfield" type="number" value={Math.floor(turn / 4)} on:blur={onTurnInput} on:keydown={function(e) { if (e.code == "Enter") onTurnInput.call(this); }}></div>
@@ -172,3 +180,16 @@ function onTurnInput() { speed.set(0); goToTurn(this.value * 4); }
         </div>
     {/each}
 </div>
+
+{:else}
+
+<Dialog show={true}>
+    <span slot="title">Replay URL</span>
+    <span slot="message">Enter the URL where the replay file is stored.</span>
+    <span slot="buttons">
+        <input id="url" class="textfield" type="url">
+        <button on:click={() => location.href = "/replay?url=" + encodeURIComponent(document.getElementById("url").value)}>Go</button>
+    </span>
+</Dialog>
+
+{/if}

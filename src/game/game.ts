@@ -83,9 +83,18 @@ export class Layout {
             layout.swamps.add(i);
         }
 
-        for (let i = 0; i < 6; i++) {
-            // TODO: Make better islands
+        let bigCenters = [];
+        outer: for (let i = 0; i < 6; i++) {
             let center = Math.floor(Math.random() * layout.width * layout.height);
+            for (let bc of bigCenters) {
+                let dist = Math.sqrt(((center - bc) % layout.width)**2 + (Math.floor((center - bc) / layout.width))**2);
+                if (dist < 24) {
+                    i--;
+                    console.log("big fail", dist);
+                    continue outer;
+                }
+            }
+            bigCenters.push(center);
 
             let island = [];
             for (let j = -2; j < 3; j++) {
@@ -107,11 +116,24 @@ export class Layout {
             layout.spawns.set(center, "");
         }
 
-        for (let i = 0; i < 64; i++) {
+        let medCenters = [];
+        outer2: for (let i = 0; i < 16; i++) {
             let center = Math.floor(Math.random() * layout.width * layout.height);
+            for (let bc of medCenters.concat(bigCenters)) {
+                let dist = Math.sqrt(((center - bc) % layout.width)**2 + (Math.floor((center - bc) / layout.width))**2);
+                if (dist < 8) {
+                    i--;
+                    console.log("med fail", dist);
+                    continue outer2;
+                }
+            }
+            medCenters.push(center);
+
+
+
             let island = [];
-            for (let m = 0; m < 2; m++) {
-                for (let k = 0; k < 2; k++) {
+            for (let m = -2; m < 2; m++) {
+                for (let k = -1; k < 2; k++) {
                     island.push(center + m + k*layout.width);
                 }
             }
@@ -122,7 +144,29 @@ export class Layout {
                 if (Math.random() < 0.3) {
                     layout.deposits.set(tile, Material.IRON);
                 }
-                if (Math.random() < 0.1) {
+                if (Math.random() < 0.05) {
+                    layout.deposits.set(tile, Material.GOLD);
+                }
+            }
+        }
+
+        for (let i = 0; i < 32; i++) {
+            let center = Math.floor(Math.random() * layout.width * layout.height);
+            let island = [];
+            for (let m = 0; m < 2; m++) {
+                for (let k = 0; k < 2; k++) {
+                    island.push(center + m + k*layout.width);
+                }
+            }
+
+            for (let tile of island) {
+                if (Math.random() < 0.2) { continue; }
+                layout.swamps.delete(tile);
+
+                if (Math.random() < 0.3) {
+                    layout.deposits.set(tile, Material.IRON);
+                }
+                if (Math.random() < 0.05) {
                     layout.deposits.set(tile, Material.GOLD);
                 }
             }
@@ -284,7 +328,6 @@ export class Game {
                     this.deleteTile(swamp);
                 }
             }
-
 
             for (let [playerIndex, moves] of this.#moves.entries()) {
                 if (moves.length  == 0)continue;

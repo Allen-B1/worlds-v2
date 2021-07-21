@@ -120,7 +120,8 @@ onMount(async () => {
         }
 
         if (selectedTile != newTile && game.tiles.get(newTile).terrain != -2) {
-            utils.xhr("POST", "/api/game/" + gameID + "/move?id=" + id + "&from=" + selectedTile + "&to=" + newTile);
+            if (!ev.shiftKey)
+                utils.xhr("POST", "/api/game/" + gameID + "/move?id=" + id + "&from=" + selectedTile + "&to=" + newTile);
             selectedTile = newTile;
         }
     });

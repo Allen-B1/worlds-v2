@@ -1,7 +1,3 @@
-<svelte:head>
-	<title>worlds 2 - replay</title>
-</svelte:head>
-
 <script context="module" lang="ts">
     import {Replay} from "../game/replay";
     export async function preload(page, session) {
@@ -12,6 +8,11 @@
         return {replay, url};
     }
 </script>
+
+<svelte:head>
+	<title>worlds 2 - replay</title>
+    <meta name="description" content="{replay.updates.length - 1} turns | {replay.players.join(", ")}">
+</svelte:head>
 
 <script lang="ts">
 import { Building } from "../game/game";

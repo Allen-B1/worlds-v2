@@ -10,6 +10,7 @@
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.3);
+    z-index: 100;
 }
 .overlay.show {
     display: block; }
@@ -22,6 +23,7 @@
     background: #fff;
     padding: 16px;
 
+    z-index: 101;
     display: flex;
     flex-direction: column;
 }
@@ -31,13 +33,13 @@ h5 { text-align: center; }
     flex-direction: column;
     align-items: center;
 }
-.buttons :global(.button), .buttons :global(button) {
+.buttons :global(.button):not(:last-child), .buttons :global(button):not(:last-child) {
     margin-bottom: 8px;
 }
 </style>
 
 <div class="overlay" class:show={show}>
-    <div class="dialog" style={"width:" + width + "px;height:" + (typeof height == "string" ? height : height + "px")}>
+    <div class="dialog" style={"min-width:" + width + "px;min-height:" + (typeof height == "string" ? height : height + "px")}>
         <h5><slot name="title"></slot></h5>
         <div><slot name="message"></slot></div>
         <div style="flex-grow:1"></div>

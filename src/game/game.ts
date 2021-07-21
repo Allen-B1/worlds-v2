@@ -283,15 +283,16 @@ export class Game {
                     tile.army = 0;
                     this.deleteTile(swamp);
                 }
-            }    
-        }
+            }
 
-        for (let [playerIndex, moves] of this.#moves.entries()) {
-            if (moves.length  == 0)continue;
-            let move;
-            do {
-                move = moves.shift()
-            } while (move && !this.applyMove(playerIndex, move[0], move[1]));
+
+            for (let [playerIndex, moves] of this.#moves.entries()) {
+                if (moves.length  == 0)continue;
+                let move;
+                do {
+                    move = moves.shift()
+                } while (move && !this.applyMove(playerIndex, move[0], move[1]));
+            }
         }
     }
 

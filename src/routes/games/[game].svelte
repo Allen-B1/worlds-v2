@@ -215,7 +215,7 @@ $: {
                 class:swamp={game.swamps.has(idx)} on:click={() => selectedTile = idx} class:selected={selectedTile == idx}>
                 {game.tiles.get(idx).army != 0 ? displayNumber(game.tiles.get(idx).army) : ""}
             </div>
-        {:else if seenTiles.has(idx)}
+        {:else if seenTiles.has(idx) || game.seen.has(idx)}
             <div class="tile seen deposit-{game.deposits.get(idx)}" class:swamp={game.swamps.has(idx)}
                 class:terrain--2={game.tiles.get(idx).terrain == -2}
                 id="tile-{idx}" style="left:{40*(idx % game.width)}px;top:{40*Math.floor(idx / game.width)}px"

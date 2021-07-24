@@ -88,6 +88,7 @@ export class Layout {
     swamps: Set<number>
     deposits: Map<number, Material>
     tiles: Map<number, Tile>
+    seen: Set<number>
 
     spawns: Map<number, Spawn>
 
@@ -100,6 +101,7 @@ export class Layout {
         layout.deposits = new Map();
         layout.tiles = new Map();
         layout.spawns = new Map();
+        layout.seen = new Set();
 
         for (let i = 0; i < layout.width * layout.height; i++) {
             layout.swamps.add(i);
@@ -127,6 +129,7 @@ export class Layout {
 
             for (let tile of island) {
                 layout.swamps.delete(tile);
+                layout.seen.add(tile);
 
                 if (Math.random() < 0.075) {
                     layout.deposits.set(tile, Material.IRON);
@@ -150,7 +153,6 @@ export class Layout {
                 }
             }
             medCenters.push(center);
-
 
 
             let island = [];
@@ -214,6 +216,7 @@ export class Layout {
         layout.swamps = new Set(obj.swamps || []);
         layout.spawns = new Map(Object.keys(obj.spawns).map(key => [Number(key), String(obj.spawns[key])]));
         layout.deposits = new Map(Object.keys(obj.deposits).map(key => [Number(key), String(obj.deposits[key]) as Material]));
+        layout.seen = new Set(obj.seen || []);
 
         if (obj.mountains instanceof Array) {
             for (let mountain of obj.mountains) {
@@ -232,6 +235,7 @@ export class Game {
 
     swamps: Set<number>
     deposits: Map<number, Material>
+    seen: Set<number>
 
     fog: boolean
     
@@ -274,6 +278,7 @@ export class Game {
 
         game.swamps = new Set(layout.swamps);
         game.deposits = new Map(layout.deposits);
+        game.seen = new Set(layout.seen);
 
         game.surrendered = new Set();
         game.tiles = new utils.DefaultMap({terrain: -1, army: 0, building: Building.EMPTY});
@@ -495,6 +500,7 @@ export class Game {
 
         game.swamps = new Set(obj.swamps);
         game.deposits = new Map(Object.keys(obj.deposits).map(key => [Number(key), String(obj.deposits[key]) as Material]));
+        game.seen = new Set(obj.seen);
 
         game.surrendered = new Set(obj.surrendered);
         game.tiles = new utils.DefaultMap({terrain: -1, army: 0, building: Building.EMPTY});

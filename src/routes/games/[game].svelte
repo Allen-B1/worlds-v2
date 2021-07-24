@@ -84,7 +84,7 @@ onMount(async () => {
         if (playerIndex != playerIndex) playerIndex = -1;
     });
 
-    updateIntervalID = setInterval(update, 150);
+    updateIntervalID = setInterval(update, 250);
     preloadStore.subscribe((value) => {
         if (value) {
             clearInterval(updateIntervalID);
@@ -139,7 +139,8 @@ function make(building: Building) {
     utils.xhr("POST", "/api/game/" + gameID + "/make?id=" + id + "&tile=" + selectedTile + "&building=" + building);
 }
 
-function isVisible(game: Game, playerIndex: number | null, tile: number) {
+let seenTiles = new Set<number>();
+function isVisible(game: Game, playerIndex: number | null, tile: number) : boolean | null {
     if (!game.fog) return true;
     if (playerIndex == null) return false;
 
@@ -148,9 +149,14 @@ function isVisible(game: Game, playerIndex: number | null, tile: number) {
 
     for (let i = -1; i < 2; i++) {
         for (let j = -1; j < 2; j++) {
-            if (game.tiles.get(tile + i + j * game.width).terrain == playerIndex) return true;
+            if (game.tiles.get(tile + i + j * game.width).terrain == playerIndex) {
+                seenTiles.add(tile);
+                seenTiles = seenTiles;
+                return true;
+            }
         }
     }
+
     return false;
 }
 
@@ -203,15 +209,21 @@ $: {
 
 <div class="map" style="width:{game.width*40}px;height:{game.height*40}px">
     {#each Array(game.width * game.height) as _, idx}
-        {#if isVisible(game, playerIndex, idx)}
+        {#if isVisible(game, playerIndex, idx) == true}
             <div class="tile terrain-{game.tiles.get(idx).terrain} building-{game.tiles.get(idx).building} deposit-{game.deposits.get(idx)}"
                 id="tile-{idx}" style="left:{40*(idx % game.width)}px;top:{40*Math.floor(idx / game.width)}px"
                 class:swamp={game.swamps.has(idx)} on:click={() => selectedTile = idx} class:selected={selectedTile == idx}>
                 {game.tiles.get(idx).army != 0 ? displayNumber(game.tiles.get(idx).army) : ""}
             </div>
+        {:else if seenTiles.has(idx)}
+            <div class="tile seen deposit-{game.deposits.get(idx)}" class:swamp={game.swamps.has(idx)}
+                class:terrain--2={game.tiles.get(idx).terrain == -2}
+                id="tile-{idx}" style="left:{40*(idx % game.width)}px;top:{40*Math.floor(idx / game.width)}px"
+                on:click={() => selectedTile = idx} class:selected={selectedTile == idx}></div>
         {:else}
             <div class="tile invisible"
-                id="tile-{idx}" style="left:{40*(idx % game.width)}px;top:{40*Math.floor(idx / game.width)}px"></div>
+                id="tile-{idx}" style="left:{40*(idx % game.width)}px;top:{40*Math.floor(idx / game.width)}px"
+                on:click={() => selectedTile = idx} class:selected={selectedTile == idx}></div>
         {/if}
     {/each}
 </div>

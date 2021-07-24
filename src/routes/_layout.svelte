@@ -1,3 +1,4 @@
+
 <svelte:head>
 	<link rel="preconnect" href="https://fonts.gstatic.com">
 		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,500;1,300;1,500&display=swap" rel="stylesheet"> 
@@ -62,6 +63,7 @@
 
 
 		.map {
+			margin: auto;
 			position: relative;
 			background: #fff; }
 		.tile {
@@ -76,6 +78,13 @@
 			z-index: 1; }
 		.tile.invisible {
 			background: #111; }
+		.tile.seen {
+			filter: brightness(70%);
+			--background: hsl(0, 0%, 40%); }
+		.tile.seen.terrain--2 {
+			background: hsl(20, 15%, 20%); }
+		.tile.seen.swamp {
+			background: hsl(240, 15%, 40%); }
 		.swamp.terrain--1 {
 			--background: hsl(240, 35%, 80%);
 		}
@@ -114,7 +123,7 @@
 		}
 
 		.terrain--2 {
-			--background: hsl(200, 50%, 15%); }
+			--background: hsl(20, 10%, 40%); }
 		.terrain--1 { color: #111; }
 		.terrain-0 {
 			--background: hsl(100, 50%, 50%); }

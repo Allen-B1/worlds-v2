@@ -19,8 +19,8 @@
 <script lang="ts">
 import Dialog from '../components/Dialog.svelte';
 
-import { Building } from "../game/game";
-import type { Tile } from "../game/game";
+import { Building, calcStats } from "../game/game";
+import type { Tile, Stats } from "../game/game";
 import { onMount } from "svelte";
 
 export let replay: Replay;
@@ -127,6 +127,12 @@ function onTurnInput() { speed.set(0); goToTurn(this.value * 4); }
 
 if (replay != null)
     reset();
+
+let stats: Stats[];
+$: {
+    if (replay)
+        stats = calcStats(replay.players.length, tiles);
+}
 </script>
 
 <style>
@@ -151,10 +157,18 @@ if (replay != null)
 </div>
 
 <div id="float-info-players" class="float-info">
-    <h5>Players</h5>
+    <div class="player-header">
+        <h5>Players</h5>
+        <span class="stat stat-land">LND</span>
+        <span class="stat stat-army">ARM</span>
+        <div class="stat stat-buildings">BLD</div>
+    </div>
     {#each Array(replay.players.length) as _, idx}
         <div class="player player-{idx}" class:dead={!alive.has(idx)}>
             <div class="name">{replay.players[idx]}</div>
+            <div class="stat stat-land">{stats[idx].land}</div>
+            <div class="stat stat-army">{stats[idx].army}</div>
+            <div class="stat stat-buildings">{stats[idx].buildings}</div>
         </div>
     {/each}
 </div>

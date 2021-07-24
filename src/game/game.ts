@@ -19,6 +19,28 @@ export interface BuildingInfo {
     cost?: utils.Object<Material, number>,
 };
 
+export interface Stats {
+    army: number,
+    land: number,
+    buildings: number,
+};
+
+export function calcStats(players: number, tiles: Map<number, Tile>): Stats[] {
+    let stats: Stats[] = [];
+    for (let i = 0; i < players; i++) {
+        stats.push({army: 0, land: 0, buildings: 0});
+    }
+    for (let [idx, tile] of tiles) {
+        if (tile.terrain >= 0) {
+            stats[tile.terrain].land += 1;
+            stats[tile.terrain].army += tile.army;
+            if (tile.building != Building.EMPTY)
+                stats[tile.terrain].buildings += 1;
+        }
+    }
+    return stats;
+}
+
 export const BUILDING_INFO: utils.Object<string, BuildingInfo> = {
     [Building.WALL]: {
         name: "Wall",

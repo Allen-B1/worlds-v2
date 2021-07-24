@@ -162,11 +162,21 @@
 			position: fixed; z-index: 3;
 			top: 88px;
 			left: 0;
-			min-width: 240px;
+			min-width: 320px;
 			border-left: 0;
 		}
 		#float-info-players .player {
 			padding-bottom: 8px;
+			display: flex;
+			flex-direction: row;
+		}
+		.player-header { display: flex; flex-direction; row; font-weight: 500; }
+		.player .name, .player-header h5 {
+			flex-grow: 1;
+		}
+		.player .stat, .player-header .stat {
+			flex-basis: 48px;
+			text-align: center;
 		}
 		.player-0 .name {
 			color: hsl(100, 50%, 50%); }
@@ -186,9 +196,9 @@
 			color: hsl(160, 50%, 50%); }
 		.player-8 .name  {
 			color: hsl(20, 25%, 55%); } 
-		.player.dead {
+		.player.dead .name {
 			text-decoration: line-through; }
-		.player.self {
+		.player.self .name {
 			font-weight: 400; }
 	</style>
 </svelte:head>

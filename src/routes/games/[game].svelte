@@ -25,7 +25,8 @@ let {session, preloading:preloadStore} = stores();
 
 import * as utils from "../../game/utils";
 import { onMount } from "svelte";
-import {Building, BUILDING_INFO, Game, Material} from "../../game/game";
+import type { Stats } from "../../game/game";
+import {Building, BUILDING_INFO, Game, Material, calcStats} from "../../game/game";
 
 export let gameID: string;
 export let game: Game;
@@ -153,6 +154,10 @@ function isVisible(game: Game, playerIndex: number | null, tile: number) {
     return false;
 }
 
+let stats: Stats;
+$: {
+    stats = calcStats(game.players.length, game.tiles);
+}
 </script>
 
 <style>
@@ -217,10 +222,18 @@ function isVisible(game: Game, playerIndex: number | null, tile: number) {
 </div>
 
 <div id="float-info-players" class="float-info">
-    <h5>Players</h5>
+    <div class="player-header">
+        <h5>Players</h5>
+        <span class="stat stat-land">LND</span>
+        <span class="stat stat-army">ARM</span>
+        <span class="stat stat-buildings">BLD</span>
+    </div>
     {#each Array(game.players.length) as _, idx}
         <div class="player player-{idx}" class:dead={!alive.has(idx)} class:self={idx == playerIndex}>
             <div class="name">{game.players[idx]}</div>
+            <div class="stat stat-land">{stats[idx].land}</div>
+            <div class="stat stat-army">{stats[idx].army}</div>
+            <div class="stat stat-buildings">{stats[idx].buildings}</div>
         </div>
     {/each}
 </div>
